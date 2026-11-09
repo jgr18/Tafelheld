@@ -38,7 +38,7 @@ button{font-family:inherit;color:inherit;border:0;cursor:pointer}
 @keyframes bob{50%{transform:translateY(-8px) rotate(-3deg)}}
 
 /* HOME */
-.hero{text-align:center;color:#fff;margin-top:3vh;display:flex;flex-direction:column;align-items:center}
+.hero{text-align:center;color:#fff;margin-top:46px;display:flex;flex-direction:column;align-items:center}
 .hero .capy{width:min(62vw,250px)}
 .hero h1{font-size:52px;margin:4px 0 0;text-shadow:0 4px 0 rgba(60,30,120,.25);line-height:1.1}
 .hero p{margin:0;font-size:20px;opacity:.95}
@@ -202,7 +202,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
 
 <!-- HOME -->
 <section class="screen" id="home">
-  <button class="parent-link" onclick="openLock()">👪 Ouders</button>
+  <button class="parent-link" onclick="openLock()">🔒 Analyse/Instellingen</button>
   <div class="wrap">
     <div class="hero">
       <div class="capy bob" id="homeCapy"></div>
@@ -248,7 +248,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
     <div class="capy bob" id="tmCapy" style="width:150px;margin:6px auto -6px"></div>
     <div class="panel" style="text-align:center;font-size:19px">Op school moet je het antwoord binnen <b><span id="tmSec">3</span> seconden</b> weten. Ben jij al zo snel?</div>
     <button class="choice" onclick="startTest('zelf')"><div class="ic">⚡</div><div><b>Bliksemronde</b><span>Druk op de knop zodra je het antwoord weet. Daarna tik je het in.</span></div></button>
-    <button class="choice" onclick="openLock('quiz')"><div class="ic">👪</div><div><b>Overhoren</b><span>Papa of mama overhoort je. Jij zegt het antwoord hardop.</span></div></button>
+    <button class="choice" onclick="openLock('quiz')"><div class="ic">🎤</div><div><b>Quizmaster</b><span>Vraag iemand om je quizmaster te zijn. Jij zegt het antwoord hardop.</span></div></button>
   </div>
 </section>
 
@@ -269,7 +269,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
       <div style="text-align:center"><button class="skip" id="skipBtn" onclick="skipTest()">Weet ik niet</button></div>
     </div>
     <div class="judge" id="tJudge">
-      <div class="panel" style="text-align:center;font-size:16px;padding:8px 12px">👪 Zij zegt het antwoord hardop. Jij tikt wat er gebeurde.</div>
+      <div class="panel" style="text-align:center;font-size:16px;padding:8px 12px">🎤 Zij zegt het antwoord hardop. Jij als quizmaster tikt wat er gebeurde.</div>
       <button class="j-ok" onclick="judge('vlot')">✅ Op tijd goed</button>
       <button class="j-late" onclick="judge('laat')">🐢 Goed, maar te laat</button>
       <button class="j-bad" onclick="judge('fout')">❌ Fout of weet het niet</button>
@@ -288,7 +288,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
 <!-- OUDERSLOT -->
 <section class="screen" id="lockScr">
   <div class="pwrap lock">
-    <h2>Alleen voor ouders</h2>
+    <h2>Alleen voor grote mensen</h2>
     <p class="muted">Reken deze som uit om verder te gaan.</p>
     <div style="font-size:34px;font-weight:800" id="lockQ"></div>
     <input id="lockIn" inputmode="numeric" autocomplete="off">
@@ -304,7 +304,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
 <section class="screen" id="parent">
   <div class="pwrap">
     <div class="phead">
-      <h2>👪 Ouderpaneel</h2>
+      <h2>🔒 Beheer</h2>
       <div class="tabs"><button id="tabA" class="on" onclick="ptab('a')">Analyse</button><button id="tabS" onclick="ptab('s')">Instellingen</button></div>
       <span class="sp"></span>
       <button class="btn" onclick="goHome()">Terug naar app</button>
@@ -355,8 +355,8 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
         <div class="row">Tijd per som
           <select id="testSecSel" onchange="settings.testSec=+this.value;store.saveSettings(settings)"><option value="3">3 seconden (zoals op school)</option><option value="4">4 seconden</option><option value="5">5 seconden</option></select></div>
         <div class="muted">Heeft ze minder dan 40 verschillende sommen (bijvoorbeeld 2 tafels = 20 sommen), dan komen sommen twee keer voor. De app meet ook de <b>totale tijd</b>: bij 40 sommen en 3 seconden per som is de norm 2 minuten.</div>
-        <div class="muted" style="margin-top:6px"><b>Bliksemronde</b> (zelf): een som telt als ⚡ vlot als ze binnen die tijd op "Ik weet het!" drukt, daarna binnen 2 seconden begint met intikken, en het antwoord goed is. <b>Overhoren</b>: jij beoordeelt het; de app telt zichtbaar af en laat na afloop van de tijd het antwoord klein zien.</div>
-        <div class="row"><button class="btn primary" onclick="startTest('overhoor')">👪 Nu overhoren</button></div>
+        <div class="muted" style="margin-top:6px"><b>Bliksemronde</b> (zelf): een som telt als ⚡ vlot als ze binnen die tijd op "Ik weet het!" drukt, daarna binnen 2 seconden begint met intikken, en het antwoord goed is. <b>Quizmaster</b>: de volwassene beoordeelt het; de app telt zichtbaar af en laat na afloop van de tijd het antwoord klein zien.</div>
+        <div class="row"><button class="btn primary" onclick="startTest('overhoor')">🎤 Quizmaster starten</button></div>
       </div>
       <div class="box">
         <h3>Testen en wissen</h3>
@@ -677,7 +677,7 @@ function buildPad(){
 async function startPlay(){
   audio();
   if(store.online){settings=await store.loadSettings();store.loadFacts().then(f=>facts=f).catch(()=>{});refreshLastTest()}
-  if(!settings.tables.length){modal(`<div class="em">🙈</div><h2>Nog geen tafels</h2><p>Vraag papa of mama om tafels te kiezen.</p><button class="big-btn" style="width:100%" onclick="goHome()">Oké</button>`);return}
+  if(!settings.tables.length){modal(`<div class="em">🙈</div><h2>Nog geen tafels</h2><p>Vraag een grote om tafels te kiezen.</p><button class="big-btn" style="width:100%" onclick="goHome()">Oké</button>`);return}
   sess={id:uuid(),started_at:nowIso(),ended_at:nowIso(),active_ms:0,correct:0,wrong:0,best_streak:0,device:DEVICE};
   startBest=settings.bestStreak||0;recordBroken=false;
   retry=[];stage={};qCount=0;lastKey=null;streak=0;stars=0;lastAct=Date.now();
@@ -787,7 +787,7 @@ function buildTestPad(){
 async function startTest(mode){
   audio();stopMusic();closeModal();
   if(store.online)settings=await store.loadSettings();
-  if(!settings.tables.length){modal(`<div class="em">🙈</div><h2>Nog geen tafels</h2><p>Vraag papa of mama om tafels te kiezen.</p><button class="big-btn" style="width:100%" onclick="goHome()">Oké</button>`);return}
+  if(!settings.tables.length){modal(`<div class="em">🙈</div><h2>Nog geen tafels</h2><p>Vraag een grote om tafels te kiezen.</p><button class="big-btn" style="width:100%" onclick="goHome()">Oké</button>`);return}
   const n=settings.testN||40,base=allKeys();let keys=[];
   while(keys.length<n){const sh=shuffle([...base]);if(keys.length&&sh[0]===keys[keys.length-1])sh.push(sh.shift());keys=keys.concat(sh)} // te weinig sommen? dan komen ze vaker voor
   T={mode,keys:keys.slice(0,n),i:-1,sec:settings.testSec||3,res:[],reward:0,t0:performance.now(),
@@ -1016,13 +1016,13 @@ function drawAnalysis(){
     :'<div class="muted">Geen opvallende probleemsommen (een som moet minstens 2 keer gevraagd zijn).</div>';
 
   // toetsen
-  if(!tests.length){$('#testsBox').innerHTML='<div class="muted">Nog geen toetsen gedaan. Ze kan zelf een ⚡ Bliksemronde doen via "Toets" op het beginscherm, of jij overhoort haar (Instellingen → Nu overhoren).</div>'+(store.online&&missingTables?'<div class="note" style="margin-top:8px">De tabellen voor toetsen ontbreken nog in de database. Voer supabase-update.sql uit.</div>':'');return}
+  if(!tests.length){$('#testsBox').innerHTML='<div class="muted">Nog geen toetsen gedaan. Ze kan zelf een ⚡ Bliksemronde doen via "Toets" op het beginscherm, of iemand overhoort haar als 🎤 Quizmaster.</div>'+(store.online&&missingTables?'<div class="note" style="margin-top:8px">De tabellen voor toetsen ontbreken nog in de database. Voer supabase-update.sql uit.</div>':'');return}
   const tl=tests.slice(-14);
-  $('#testsBox').innerHTML=`<div class="muted">Percentage ⚡ vlot per toets (⚡ = Bliksemronde, 👪 = overhoord)</div>
-    <div class="tbars">${tl.map(t=>{const p=t.vlot/t.total;return `<div class="d"><em>${Math.round(p*100)}%</em><i style="height:${p*75}%;background:${col(p)}"></i>${t.mode==='overhoor'?'👪':'⚡'}<br>${dstr(t.started_at,{day:'numeric',month:'numeric'})}</div>`}).join('')}</div>
+  $('#testsBox').innerHTML=`<div class="muted">Percentage ⚡ vlot per toets (⚡ = Bliksemronde, 🎤 = Quizmaster)</div>
+    <div class="tbars">${tl.map(t=>{const p=t.vlot/t.total;return `<div class="d"><em>${Math.round(p*100)}%</em><i style="height:${p*75}%;background:${col(p)}"></i>${t.mode==='overhoor'?'🎤':'⚡'}<br>${dstr(t.started_at,{day:'numeric',month:'numeric'})}</div>`}).join('')}</div>
     <div style="overflow-x:auto"><table class="hard"><tr><th>Datum</th><th>Soort</th><th>Sommen</th><th>⚡</th><th>🐢</th><th>❌</th><th>Tijd</th><th>Per som</th><th>Score</th></tr>
     ${[...tests].reverse().map(t=>{const tm=t.net_ms?`<b>${mmss(t.net_ms)}</b> <span style="color:${normTxt(t)?'#1f9d55':'#d9822b'}">${normTxt(t)?'✓':'✗'}</span>`+(t.duration_ms?`<div class="muted">totaal ${mmss(t.duration_ms)}</div>`:''):'–';
-      return `<tr><td>${dstr(t.started_at)}</td><td>${t.mode==='overhoor'?'👪 Overhoord':'⚡ Bliksem'}${t.total<t.planned?' <span class="muted">(gestopt)</span>':''}</td><td>${t.total}</td><td>${t.vlot}</td><td>${t.laat}</td><td>${t.fout}</td><td>${tm}</td><td>${t.net_ms?(t.net_ms/t.total/1000).toFixed(1)+' s':'–'}</td><td><b>${Math.round(t.vlot/t.total*100)}%</b></td></tr>`}).join('')}</table></div>
+      return `<tr><td>${dstr(t.started_at)}</td><td>${t.mode==='overhoor'?'🎤 Quizmaster':'⚡ Bliksem'}${t.total<t.planned?' <span class="muted">(gestopt)</span>':''}</td><td>${t.total}</td><td>${t.vlot}</td><td>${t.laat}</td><td>${t.fout}</td><td>${tm}</td><td>${t.net_ms?(t.net_ms/t.total/1000).toFixed(1)+' s':'–'}</td><td><b>${Math.round(t.vlot/t.total*100)}%</b></td></tr>`}).join('')}</table></div>
     <div class="muted" style="margin-top:6px"><b>Tijd</b> = opgetelde tijd per som (van tonen tot antwoord of tot jouw tik); ✓ = binnen de norm van ${settings.testSec||3} seconden per som (40 sommen = 2 minuten). <b>Totaal</b> = de hele toets inclusief de korte pauzes tussen de sommen.</div>`;
 }
 function drawHeat(){
