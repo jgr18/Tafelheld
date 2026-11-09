@@ -57,7 +57,10 @@ button{font-family:inherit;color:inherit;border:0;cursor:pointer}
 .pill{background:rgba(255,255,255,.9);border-radius:99px;padding:6px 14px;font-size:20px;font-weight:800;white-space:nowrap}
 .topbar .grow{flex:1;background:rgba(255,255,255,.9);border-radius:99px;padding:6px 12px;display:flex;align-items:center;gap:8px;font-size:20px}
 .topbar .grow .bar{flex:1;margin:0;height:14px}
-.playcapy{width:120px;margin:-4px auto -30px;position:relative;z-index:2}
+.streakrow{background:rgba(255,255,255,.9);border-radius:99px;padding:4px 14px;font-size:18px;font-weight:700;text-align:center;transition:background .3s}
+.streakrow.gold{background:linear-gradient(90deg,#ffd84d,#ffb347);animation:pop .5s}
+.record{font-size:19px;font-weight:700;background:rgba(255,255,255,.25);border-radius:99px;padding:2px 14px;margin-top:6px}
+.playcapy{width:120px;margin:16px auto -30px;position:relative;z-index:2}
 .qcard{background:var(--card);border-radius:30px;padding:30px 16px 14px;text-align:center;box-shadow:0 10px 0 rgba(80,50,160,.18);min-height:190px;display:flex;flex-direction:column;justify-content:center}
 .q{font-size:clamp(54px,15vw,86px);font-weight:800;line-height:1}
 .ans{font-size:clamp(42px,12vw,64px);font-weight:800;min-height:1.25em;margin:6px auto 0;color:#7b5cff;border-bottom:4px dashed #d9d0ff;width:60%}
@@ -182,6 +185,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
       <div class="capy bob" id="homeCapy"></div>
       <h1>Tafelheld</h1>
       <p id="homeTables">Tafel van …</p>
+      <div class="record" id="homeRecord" style="display:none"></div>
     </div>
     <button class="big-btn" onclick="startPlay()">▶ Oefenen!</button>
     <div class="panel">
@@ -202,6 +206,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
       <span class="pill">⭐ <span id="stars">0</span></span>
       <button class="pill" id="musicBtn" onclick="toggleMusic()">🎵</button>
     </div>
+    <div class="streakrow" id="streakRow"></div>
     <div class="capy playcapy" id="playCapy"></div>
     <div class="qcard" id="qcard">
       <div class="q" id="q"></div>
@@ -286,9 +291,9 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
         <div class="row">
           <button class="btn" id="demoBtn" onclick="loadDemo()">Vul met testdata (2 weken)</button>
           <button class="btn danger" id="wipeBtn" onclick="wipe()">Analyse wissen</button>
-          <button class="btn danger" id="stkBtn" onclick="resetStickers()">Stickers resetten</button>
+          <button class="btn danger" id="stkBtn" onclick="resetStickers()">Stickers en record resetten</button>
         </div>
-        <div class="muted">"Analyse wissen" verwijdert alle oefenrondes en antwoorden, op alle apparaten. Haar stickers blijven staan, tenzij je die apart reset.</div>
+        <div class="muted">"Analyse wissen" verwijdert alle oefenrondes en antwoorden, op alle apparaten. Haar stickers en haar record blijven staan, tenzij je die apart reset.</div>
       </div>
       <div class="box">
         <h3>Account en opslag</h3>
@@ -307,7 +312,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
    ========================================================= */
 const CFG=window.TAFELHELD_CONFIG||{};
 const WANT_ONLINE=!!(CFG.supabaseUrl&&CFG.supabaseAnonKey);
-const DEFAULTS={tables:[2,3,4,5,10],rewardMin:5,music:true,sfx:true,rewardMs:0,stickers:[]};
+const DEFAULTS={tables:[2,3,4,5,10],rewardMin:5,music:true,sfx:true,rewardMs:0,stickers:[],bestStreak:0,bestStreakAt:null};
 const $=s=>document.querySelector(s);
 const rnd=n=>Math.floor(Math.random()*n);
 const nowIso=()=>new Date().toISOString();
@@ -374,7 +379,14 @@ const LocalStore={
   pending(){return 0},
   account(){return 'Proefversie: alles staat alleen op dít apparaat. Vul config.js in om online op te slaan.'}
 };
-let sb=null,uid=null,userEmail='';
+let sb=null,uid=null,userEmail='',noStreakCols=false;
+// Werkt ook als de database-update voor 'langste reeks' nog niet is uitgevoerd
+function strip(o){if(!noStreakCols)return o;const c={...o};delete c.best_streak;delete c.best_streak_at;return c}
+async function safeUpsert(table,rows){
+  let r=await sb.from(table).upsert(rows.map(strip));
+  if(r.error&&/best_streak/.test(r.error.message)&&!noStreakCols){noStreakCols=true;console.warn('Database-update voor reeksen ontbreekt');r=await sb.from(table).upsert(rows.map(strip))}
+  return r;
+}
 const SupaStore={
   online:true,ob:lsGet('th-outbox',{sessions:{},answers:[]}),st:null,pendingS:null,flushing:false,retryT:null,
   async init(){
@@ -392,14 +404,14 @@ const SupaStore={
       const {data,error}=await sb.from('settings').select('*').eq('user_id',uid).maybeSingle();
       if(error)throw error;
       if(!data)return cache||{...DEFAULTS};
-      const s={tables:data.tables||[],rewardMin:data.reward_min,music:data.music,sfx:data.sfx,rewardMs:Number(data.reward_ms)||0,stickers:data.stickers||[]};
+      const s={tables:data.tables||[],rewardMin:data.reward_min,music:data.music,sfx:data.sfx,rewardMs:Number(data.reward_ms)||0,stickers:data.stickers||[],bestStreak:data.best_streak||0,bestStreakAt:data.best_streak_at||null};
       lsSet('th-settings',s);return s;
     }catch(e){console.warn(e);return cache||{...DEFAULTS}}
   },
   saveSettings(s){lsSet('th-settings',s);this.pendingS={...s};clearTimeout(this.st);this.st=setTimeout(()=>this.flushSettings(),1500)},
   async flushSettings(){
     clearTimeout(this.st);this.st=null;const s=this.pendingS;if(!s)return;
-    try{const {error}=await sb.from('settings').upsert({user_id:uid,tables:s.tables,reward_min:s.rewardMin,music:s.music,sfx:s.sfx,reward_ms:Math.round(s.rewardMs),stickers:s.stickers,updated_at:nowIso()});
+    try{const {error}=await safeUpsert('settings',[{user_id:uid,tables:s.tables,reward_min:s.rewardMin,music:s.music,sfx:s.sfx,reward_ms:Math.round(s.rewardMs),stickers:s.stickers,best_streak:s.bestStreak||0,best_streak_at:s.bestStreakAt||null,updated_at:nowIso()}]);
       if(error)throw error;if(this.pendingS===s)this.pendingS=null}catch(e){console.warn('instellingen niet verstuurd',e)}
   },
   saveOb(){lsSet('th-outbox',this.ob)},
@@ -410,7 +422,7 @@ const SupaStore={
     if(this.flushing||!uid)return;this.flushing=true;let failed=false;
     try{
       const ss=Object.values(this.ob.sessions);
-      if(ss.length){const {error}=await sb.from('sessions').upsert(ss.map(s=>({...s,user_id:uid})));if(error)throw error;
+      if(ss.length){const {error}=await safeUpsert('sessions',ss.map(s=>({...s,user_id:uid})));if(error)throw error;
         ss.forEach(s=>{if(JSON.stringify(this.ob.sessions[s.id])===JSON.stringify(s))delete this.ob.sessions[s.id]})}
       const as=this.ob.answers.slice(0,500);
       if(as.length){const {error}=await sb.from('answers').upsert(as.map(a=>({...a,user_id:uid})));if(error)throw error;this.ob.answers.splice(0,as.length)}
@@ -439,10 +451,10 @@ const SupaStore={
     lsSet('th-facts',{});
   },
   async addBulk(ss,as){
-    let r=await sb.from('sessions').upsert(ss.map(s=>({...s,user_id:uid})));if(r.error)throw r.error;
+    let r=await safeUpsert('sessions',ss.map(s=>({...s,user_id:uid})));if(r.error)throw r.error;
     for(let i=0;i<as.length;i+=500){r=await sb.from('answers').upsert(as.slice(i,i+500).map(a=>({...a,user_id:uid})));if(r.error)throw r.error}
   },
-  account(){return `Online opslag in Supabase. Ingelogd als <b>${userEmail}</b>.`+(this.pending()?` <span class="muted">(${this.pending()} antwoorden wachten op internet)</span>`:'')}
+  account(){return `Online opslag in Supabase. Ingelogd als <b>${userEmail}</b>.`+(this.pending()?` <span class="muted">(${this.pending()} antwoorden wachten op internet)</span>`:'')+(noStreakCols?'<div class="note" style="margin-top:8px">De database mist nog de kolommen voor de langste reeks. Voer het SQL-script supabase-update-reeks.sql uit in Supabase.</div>':'')}
 };
 
 let store=LocalStore,settings={...DEFAULTS},facts={};
@@ -499,7 +511,8 @@ function duck(){if(!musicGain)return;const t=ac.currentTime;musicGain.gain.cance
 function sfxGood(){if(!settings.sfx||!audio())return;duck();const t=ac.currentTime;[72,76,79,84].forEach((m,i)=>tone(mf(m),t+i*0.08,0.35,'square',0.12));tone(mf(96),t+0.34,0.3,'sine',0.08)}
 function sfxBad(){if(!settings.sfx||!audio())return;duck();const t=ac.currentTime;tone(mf(55),t,0.28,'sawtooth',0.12);tone(mf(50),t+0.28,0.5,'sawtooth',0.12)}
 function sfxFanfare(){if(!audio())return;duck();const t=ac.currentTime;[60,64,67,72,67,72,76,79].forEach((m,i)=>tone(mf(m+12),t+i*0.12,i===7?0.8:0.2,'square',0.1))}
-function previewSounds(){audio();const s=settings.sfx;settings.sfx=true;sfxGood();setTimeout(sfxBad,1200);setTimeout(()=>{sfxFanfare();settings.sfx=s},2600)}
+function sfxRecord(){if(!audio())return;duck();const t=ac.currentTime;[67,72,76,79,84,88].forEach((m,i)=>tone(mf(m),t+i*0.07,i===5?0.7:0.18,'triangle',0.14));[84,88,91].forEach(m=>tone(mf(m),t+0.5,0.6,'sine',0.06))}
+function previewSounds(){audio();const s=settings.sfx;settings.sfx=true;sfxGood();setTimeout(sfxBad,1200);setTimeout(sfxFanfare,2600);setTimeout(()=>{sfxRecord();settings.sfx=s},4200)}
 
 /* ---------- home & album ---------- */
 function tablesText(){const t=[...settings.tables].sort((a,b)=>a-b);if(!t.length)return 'Nog geen tafels gekozen';return 'Tafel van '+(t.length>1?t.slice(0,-1).join(', ')+' en '+t[t.length-1]:t[0])}
@@ -510,6 +523,7 @@ function renderHome(){
   $('#homeBar').style.width=rewardPct()+'%';
   const left=Math.max(0,settings.rewardMin*60000-settings.rewardMs);
   $('#homeBarTxt').textContent='Nog ongeveer '+Math.max(1,Math.ceil(left/60000))+' min oefenen';
+  const hr=$('#homeRecord');hr.style.display=settings.bestStreak>=2?'':'none';hr.textContent=`🏆 Jouw record: ${settings.bestStreak} goed op een rij`;
   const last=settings.stickers[settings.stickers.length-1];
   if(last!==undefined&&STICKERS[last])capy($('#homeCapy'),STICKERS[last][0],STICKERS[last][2]);
 }
@@ -522,7 +536,7 @@ function openAlbum(){
 
 /* ---------- oefenen ---------- */
 let cur=null,input='',qStart=0,lastAct=0,sess=null,busy=false,streak=0,stars=0;
-let retry=[],stage={},qCount=0,lastKey=null,pendingReward=false;
+let retry=[],stage={},qCount=0,lastKey=null,pendingReward=false,startBest=0,recordBroken=false;
 function allKeys(){const k=[];settings.tables.forEach(t=>{for(let n=1;n<=10;n++)k.push(n+'x'+t)});return k}
 function pick(){
   qCount++;
@@ -549,9 +563,10 @@ async function startPlay(){
   audio();
   if(store.online){settings=await store.loadSettings();store.loadFacts().then(f=>facts=f).catch(()=>{})}
   if(!settings.tables.length){modal(`<div class="em">🙈</div><h2>Nog geen tafels</h2><p>Vraag papa of mama om tafels te kiezen.</p><button class="big-btn" style="width:100%" onclick="goHome()">Oké</button>`);return}
-  sess={id:uuid(),started_at:nowIso(),ended_at:nowIso(),active_ms:0,correct:0,wrong:0,device:DEVICE};
+  sess={id:uuid(),started_at:nowIso(),ended_at:nowIso(),active_ms:0,correct:0,wrong:0,best_streak:0,device:DEVICE};
+  startBest=settings.bestStreak||0;recordBroken=false;
   retry=[];stage={};qCount=0;lastKey=null;streak=0;stars=0;lastAct=Date.now();
-  $('#stars').textContent='0';$('#playBar').style.width=rewardPct()+'%';
+  $('#stars').textContent='0';$('#playBar').style.width=rewardPct()+'%';$('#streakRow').className='streakrow';updStreak();
   show('play');startMusic();next();
 }
 function next(){
@@ -565,6 +580,11 @@ function press(k){
   if(k==='del')input=input.slice(0,-1);else if(k==='ok'){check();return}else if(input.length<3)input+=k;
   upd();
 }
+function updStreak(){
+  const best=settings.bestStreak||0,r=$('#streakRow');
+  if(recordBroken&&startBest>=3)r.innerHTML=`🏆 Nieuw record: <b>${best}</b> op een rij!`;
+  else r.innerHTML=`🔥 <b>${streak}</b> op een rij`+(best>=2?` &nbsp;·&nbsp; 🏆 record <b>${best}</b>`:'');
+}
 const PRAISE=['Goed zo!','Super!','Knap hoor!','Yes!','Top!','Wauw!','Helemaal goed!'];
 function check(){
   if(!input)return;busy=true;
@@ -577,19 +597,24 @@ function check(){
   const f=facts[cur]||(facts[cur]={tries:0,correct:0,ms:0,wrongs:[],last:0});
   f.tries++;f.ms+=dt;f.last=now;
   if(ok){
-    f.correct++;streak++;stars++;
+    f.correct++;streak++;stars++;sess.best_streak=Math.max(sess.best_streak,streak);
+    let newRec=false;
+    if(streak>(settings.bestStreak||0)){settings.bestStreak=streak;settings.bestStreakAt=nowIso();if(!recordBroken){recordBroken=true;newRec=startBest>=3}}
     if(stage[cur]===1){stage[cur]=2;schedule(cur,6+rnd(4))}else delete stage[cur]; // na fout: nog één controle later
     $('#qcard').className='qcard good';$('#playCapy').className='capy playcapy hop';
-    $('#fb').textContent=streak%5===0?`🔥 ${streak} op een rij!`:PRAISE[rnd(PRAISE.length)];
-    $('#stars').textContent=stars;sfxGood();
-    if(streak%5===0)confetti(['⭐','✨','🌟','🍊'],14);
+    const best=settings.bestStreak;
+    $('#fb').textContent=newRec?'🏆 NIEUW RECORD!':streak%5===0?`🔥 ${streak} op een rij!`:(!recordBroken&&best>=3&&best-streak===1)?'Nog 1 voor je record! 😮':(!recordBroken&&best>=3&&best-streak===0)?'Evenveel als je record!':PRAISE[rnd(PRAISE.length)];
+    $('#stars').textContent=stars;
+    if(newRec){sfxRecord();confetti(['🏆','🔥','⭐','🍊'],26);$('#streakRow').className='streakrow gold'}
+    else{sfxGood();if(streak%5===0)confetti(['⭐','✨','🌟','🍊'],14)}
   }else{
     f.wrongs.unshift(given);f.wrongs=f.wrongs.slice(0,6);
-    streak=0;stage[cur]=1;schedule(cur,3+rnd(3)); // niet direct, maar na 3 tot 5 andere sommen
+    const had=streak;streak=0;stage[cur]=1;schedule(cur,3+rnd(3)); // niet direct, maar na 3 tot 5 andere sommen
     $('#qcard').className='qcard bad';$('#playCapy').className='capy playcapy sad';
-    $('#fb').innerHTML=`Het is <span style="color:var(--good)">${n} × ${t} = ${ans}</span>`;
+    $('#fb').innerHTML=`Het is <span style="color:var(--good)">${n} × ${t} = ${ans}</span>`+(had>=5?`<div style="font-size:18px;color:var(--soft)">Knap: je had er ${had} op een rij!</div>`:'');
     sfxBad();
   }
+  updStreak();
   store.saveSession(sess);
   store.addAnswer({id:uuid(),session_id:sess.id,a:n,tafel:t,given,correct:ok,ms:dt,created_at:nowIso()});
   const target=settings.rewardMin*60000;
@@ -607,8 +632,9 @@ function giveSticker(){
 }
 function stopPlay(){
   stopMusic();store.flushSettings();
-  const c=sess?sess.correct:0;
-  modal(`${capyHtml(settings.stickers.length?settings.stickers[settings.stickers.length-1]:0)}<h2>${c?'Goed gedaan!':'Tot zo!'}</h2><p>${c?`Je hebt <b>${c}</b> ${c===1?'som':'sommen'} goed gedaan. ⭐`:'Kom je straks weer oefenen?'}</p><button class="big-btn" style="width:100%" onclick="goHome()">Klaar</button>`);
+  const c=sess?sess.correct:0,rec=recordBroken&&startBest>=3;
+  if(rec){sfxRecord();confetti(['🏆','🔥','⭐'],20)}
+  modal(`${rec?'<div class="em">🏆</div>':capyHtml(settings.stickers.length?settings.stickers[settings.stickers.length-1]:0)}<h2>${rec?'Nieuw record!':c?'Goed gedaan!':'Tot zo!'}</h2><p>${rec?`<b>${settings.bestStreak}</b> goed op een rij! Dat heb je nog nooit gedaan. 🔥<br>`:''}${c?`Je hebt <b>${c}</b> ${c===1?'som':'sommen'} goed gedaan. ⭐`:'Kom je straks weer oefenen?'}</p><button class="big-btn" style="width:100%" onclick="goHome()">Klaar</button>`);
   sess=null;
 }
 function modal(h){$('#modal').innerHTML=h;$('#ov').classList.add('show')}
@@ -656,9 +682,9 @@ function wipe(){confirmTwice('wipeBtn','Analyse wissen',async b=>{
   try{await store.wipe();facts={};b.textContent='Gewist ✓'}catch(e){b.textContent='Mislukt: '+e.message}
   b.disabled=false;setTimeout(()=>b.textContent='Analyse wissen',3000);
 })}
-function resetStickers(){confirmTwice('stkBtn','Stickers resetten',async b=>{
-  settings.stickers=[];settings.rewardMs=0;store.saveSettings(settings);await store.flushSettings();
-  b.textContent='Gereset ✓';setTimeout(()=>b.textContent='Stickers resetten',3000);
+function resetStickers(){confirmTwice('stkBtn','Stickers en record resetten',async b=>{
+  settings.stickers=[];settings.rewardMs=0;settings.bestStreak=0;settings.bestStreakAt=null;store.saveSettings(settings);await store.flushSettings();
+  b.textContent='Gereset ✓';setTimeout(()=>b.textContent='Stickers en record resetten',3000);
 })}
 function logout(){confirmTwice('logoutBtn','Uitloggen op dit apparaat',async()=>{await store.logout();show('loginScr')})}
 async function loadDemo(){
@@ -671,12 +697,12 @@ async function loadDemo(){
     for(let s=0;s<nS;s++){
       const st=new Date(now-d*864e5);st.setHours(16+s*2,rnd(50),0,0);if(+st>now)st.setTime(now-3600e3);
       const S={id:uuid(),started_at:st.toISOString(),active_ms:0,correct:0,wrong:0,device:Math.random()<.6?'Android':'Laptop/pc'};
-      let t0=+st;const q=14+rnd(26);
+      let t0=+st,run=0;S.best_streak=0;const q=14+rnd(26);
       for(let i=0;i<q;i++){
         const t=T[rnd(5)],n=1+rnd(10),k=n+'x'+t,ans=n*t;
         let p=hard[k]!==undefined?hard[k]:(t===2||t===10?.97:t===5?.92:.86);p=Math.min(.99,p+(13-d)*.012);
         const ok=Math.random()<p,ms=(ok?2200+rnd(3500):5000+rnd(5000))+(hard[k]!==undefined?2500:0);
-        t0+=ms+1200;ok?S.correct++:S.wrong++;S.active_ms+=ms+1200;
+        t0+=ms+1200;ok?S.correct++:S.wrong++;run=ok?run+1:0;S.best_streak=Math.max(S.best_streak,run);S.active_ms+=ms+1200;
         as.push({id:uuid(),session_id:S.id,a:n,tafel:t,given:ok?ans:ans+[t,-t,1,-1,t][rnd(5)],correct:ok,ms,created_at:new Date(t0).toISOString()});
       }
       S.ended_at=new Date(t0).toISOString();ss.push(S);
@@ -694,6 +720,7 @@ function mostCommon(a){const c={};a.forEach(x=>c[x]=(c[x]||0)+1);return Object.e
 async function renderAnalysis(){
   $('#paLoading').style.display='';$('#paLoading').textContent='Gegevens ophalen…';$('#paBody').style.display='none';
   let F,S;
+  if(store.online)settings=await store.loadSettings();
   try{[F,S]=await Promise.all([store.loadFacts(),store.loadSessions()])}
   catch(e){$('#paLoading').textContent='Kon de gegevens niet ophalen: '+e.message;return}
   facts=F;S=S.filter(s=>s.correct+s.wrong>0);
@@ -703,7 +730,9 @@ async function renderAnalysis(){
   const last=S.length?new Date(S[S.length-1].started_at):null;
   $('#kpis').innerHTML=[
     [fmt(tot),'totaal geoefend'],[S.length,`keer geoefend (${days} ${days===1?'dag':'dagen'})`],[S.length?fmt(tot/S.length):'–','gemiddeld per keer'],
-    [all?Math.round(good/all*100)+'%':'–',`goed (${all} sommen)`],[last?last.toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'}):'–','laatst geoefend']
+    [all?Math.round(good/all*100)+'%':'–',`goed (${all} sommen)`],[last?last.toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'}):'–','laatst geoefend'],
+    [settings.bestStreak?`🏆 ${settings.bestStreak}`:'–','langste reeks goed'+(settings.bestStreakAt?' ('+new Date(settings.bestStreakAt).toLocaleDateString('nl-NL',{day:'numeric',month:'short'})+')':'')],
+    [S.length?Math.max(...S.slice(-7).map(s=>s.best_streak||0)):'–','beste reeks laatste 7 keer']
   ].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
   const dev={};S.forEach(s=>dev[s.device||'?']=(dev[s.device||'?']||0)+1);
   $('#devices').textContent=S.length?'Geoefend op: '+Object.entries(dev).map(([k,v])=>`${k} (${v}×)`).join(', '):'';
