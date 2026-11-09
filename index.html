@@ -1,0 +1,744 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#8f7dff">
+<title>Tafelheld</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script src="config.js"></script>
+<style>
+:root{--ink:#2d2250;--soft:#6b5f99;--good:#22b866;--bad:#ff5a5f;--sun:#ffc93c;--lav:#efeaff;--card:#fff}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;min-height:100%}
+body{font-family:'Baloo 2',system-ui,sans-serif;color:var(--ink);background:linear-gradient(165deg,#8f7dff 0%,#b98cff 45%,#ff9cc6 100%);background-attachment:fixed;user-select:none;-webkit-user-select:none}
+button{font-family:inherit;color:inherit;border:0;cursor:pointer}
+.screen{display:none;min-height:100vh;padding:16px;flex-direction:column;align-items:center}
+.screen.active{display:flex}
+.wrap{width:100%;max-width:480px;display:flex;flex-direction:column;gap:14px}
+
+/* capibara */
+.capy{position:relative;container-type:inline-size;aspect-ratio:200/160}
+.capy svg{width:100%;height:100%;display:block;overflow:visible}
+.capy .acc{position:absolute;transform:translate(-50%,-50%);line-height:1;pointer-events:none}
+.acc.head{left:74%;top:14%;font-size:28cqw}
+.acc.eye{left:75%;top:39%;font-size:19cqw}
+.acc.side{left:12%;top:20%;font-size:24cqw}
+.acc.front{left:86%;top:84%;font-size:24cqw}
+.capy.locked svg{filter:brightness(0);opacity:.18}
+.capy.hop{animation:hop .5s}
+.capy.sad{animation:sad .7s}
+@keyframes hop{30%{transform:translateY(-22px) rotate(-6deg)}60%{transform:translateY(0)}75%{transform:translateY(-8px)}}
+@keyframes sad{30%,70%{transform:rotate(8deg) translateY(4px)}}
+.bob{animation:bob 2.4s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(-3deg)}}
+
+/* HOME */
+.hero{text-align:center;color:#fff;margin-top:3vh;display:flex;flex-direction:column;align-items:center}
+.hero .capy{width:min(62vw,250px)}
+.hero h1{font-size:52px;margin:4px 0 0;text-shadow:0 4px 0 rgba(60,30,120,.25);line-height:1.1}
+.hero p{margin:0;font-size:20px;opacity:.95}
+.big-btn{background:var(--sun);font-size:30px;font-weight:800;padding:16px;border-radius:24px;box-shadow:0 6px 0 #e0a516;transition:transform .08s}
+.big-btn:active{transform:translateY(4px);box-shadow:0 2px 0 #e0a516}
+.sec-btn{background:#fff;font-size:22px;font-weight:700;padding:14px;border-radius:20px;box-shadow:0 5px 0 #d6ccff}
+.sec-btn:active{transform:translateY(3px);box-shadow:0 2px 0 #d6ccff}
+.panel{background:rgba(255,255,255,.92);border-radius:22px;padding:14px 16px;box-shadow:0 8px 24px rgba(60,30,120,.15)}
+.panel small{color:var(--soft);font-size:15px}
+.bar{height:18px;background:var(--lav);border-radius:99px;overflow:hidden;margin-top:6px}
+.bar>i{display:block;height:100%;background:linear-gradient(90deg,#ffb347,#ff6fa8);border-radius:99px;transition:width .5s;width:0}
+.parent-link{position:fixed;top:12px;right:12px;background:rgba(255,255,255,.25);color:#fff;font-size:15px;font-weight:700;padding:6px 12px;border-radius:99px;z-index:5}
+
+/* PLAY */
+.topbar{display:flex;align-items:center;gap:8px}
+.pill{background:rgba(255,255,255,.9);border-radius:99px;padding:6px 14px;font-size:20px;font-weight:800;white-space:nowrap}
+.topbar .grow{flex:1;background:rgba(255,255,255,.9);border-radius:99px;padding:6px 12px;display:flex;align-items:center;gap:8px;font-size:20px}
+.topbar .grow .bar{flex:1;margin:0;height:14px}
+.playcapy{width:120px;margin:-4px auto -30px;position:relative;z-index:2}
+.qcard{background:var(--card);border-radius:30px;padding:30px 16px 14px;text-align:center;box-shadow:0 10px 0 rgba(80,50,160,.18);min-height:190px;display:flex;flex-direction:column;justify-content:center}
+.q{font-size:clamp(54px,15vw,86px);font-weight:800;line-height:1}
+.ans{font-size:clamp(42px,12vw,64px);font-weight:800;min-height:1.25em;margin:6px auto 0;color:#7b5cff;border-bottom:4px dashed #d9d0ff;width:60%}
+.fb{font-size:24px;font-weight:800;min-height:36px;margin-top:6px}
+.qcard.good{background:#e6fff0;animation:pop .35s}
+.qcard.good .ans{color:var(--good)}
+.qcard.bad{background:#fff0f1;animation:shake .4s}
+.qcard.bad .ans{color:var(--bad);text-decoration:line-through}
+@keyframes pop{50%{transform:scale(1.04)}}
+@keyframes shake{20%,60%{transform:translateX(-10px)}40%,80%{transform:translateX(10px)}}
+.pad{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.pad button{background:#fff;font-size:34px;font-weight:800;height:clamp(56px,8.5vh,74px);border-radius:20px;box-shadow:0 5px 0 #d6ccff}
+.pad button:active{transform:translateY(3px);box-shadow:0 2px 0 #d6ccff}
+.pad .ok{background:var(--good);color:#fff;box-shadow:0 5px 0 #168a4b}
+.pad .del{background:#ffe1e8;box-shadow:0 5px 0 #f3b5c6}
+
+/* OVERLAY */
+.overlay{position:fixed;inset:0;background:rgba(45,34,80,.55);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+.overlay.show{display:flex}
+.modal{background:#fff;border-radius:28px;padding:22px;text-align:center;max-width:380px;width:100%;animation:pop .4s}
+.modal .capy{width:70%;margin:10px auto 0}
+.modal .em{font-size:90px;line-height:1.1}
+.modal h2{margin:4px 0;font-size:30px}
+.modal p{margin:4px 0 16px;font-size:20px;color:var(--soft)}
+.confetti{position:fixed;top:-40px;font-size:28px;pointer-events:none;z-index:60;animation:fall linear forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+
+/* ALBUM */
+.album{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stk{background:#fff;border-radius:18px;padding:12px 6px 6px;display:flex;flex-direction:column;align-items:center;box-shadow:0 4px 0 #d6ccff;text-align:center}
+.stk .capy{width:88%}
+.stk span{font-size:13px;font-weight:700;color:var(--soft);line-height:1.1;margin-top:4px;min-height:2.2em;display:flex;align-items:center}
+.stk.locked{background:rgba(255,255,255,.45);box-shadow:none}
+@media(min-width:600px){.album{grid-template-columns:repeat(5,1fr)}}
+
+/* LOGIN */
+.login{background:#fff;border-radius:26px;padding:22px;display:flex;flex-direction:column;gap:10px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;user-select:text;-webkit-user-select:text}
+.login h2{margin:0;font-family:'Baloo 2',sans-serif;font-size:28px}
+.login input{font:inherit;font-size:17px;padding:12px;border-radius:12px;border:2px solid #ddd5fb}
+.login .muted{font-size:14px}
+
+/* PARENT */
+#parent{align-items:stretch}
+.pwrap{width:100%;max-width:940px;margin:0 auto;background:#f8f6ff;border-radius:24px;padding:18px;display:flex;flex-direction:column;gap:16px;font-family:system-ui,-apple-system,'Segoe UI',sans-serif;user-select:text;-webkit-user-select:text}
+.pwrap h2{margin:0;font-size:22px}
+.pwrap h3{margin:0 0 10px;font-size:16px}
+.phead{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.phead .sp{flex:1}
+.tabs{display:flex;gap:6px;background:#e9e4ff;padding:4px;border-radius:12px}
+.tabs button{background:transparent;padding:8px 14px;border-radius:9px;font-weight:600;font-size:14px;font-family:inherit}
+.tabs button.on{background:#fff;box-shadow:0 1px 3px rgba(0,0,0,.1)}
+.btn{background:#fff;border:1px solid #d9d2f5;padding:9px 14px;border-radius:10px;font-size:14px;font-weight:600;font-family:system-ui,-apple-system,'Segoe UI',sans-serif}
+.btn.primary{background:#7b5cff;color:#fff;border-color:#7b5cff}
+.btn.danger{color:#c62f3a;border-color:#f3c0c4}
+.btn:disabled{opacity:.5}
+.box{background:#fff;border-radius:16px;padding:16px;border:1px solid #ebe6fb;margin-top:14px}
+.box:first-child{margin-top:0}
+.tgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-width:420px}
+.tgrid button{padding:12px 0;border-radius:12px;background:#f1eefc;font-weight:700;font-size:18px;font-family:inherit}
+.tgrid button.on{background:#7b5cff;color:#fff}
+.row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0;font-size:15px}
+select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid #d9d2f5}
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.kpi{background:#fff;border:1px solid #ebe6fb;border-radius:14px;padding:12px 14px}
+.kpi b{display:block;font-size:26px;font-variant-numeric:tabular-nums}
+.kpi span{font-size:13px;color:var(--soft)}
+.days{display:flex;align-items:flex-end;gap:4px;height:130px;padding-top:8px}
+.days .d{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;font-size:10px;color:var(--soft);text-align:center}
+.days .d i{display:block;width:100%;max-width:26px;background:#7b5cff;border-radius:5px 5px 2px 2px;min-height:2px}
+.days .d em{font-style:normal;font-size:10px;color:var(--ink);font-weight:600}
+.trow{display:grid;grid-template-columns:95px 1fr 72px 92px;gap:10px;align-items:center;font-size:14px;padding:5px 0}
+.trow .tb{height:14px;background:#f0edfb;border-radius:99px;overflow:hidden}
+.trow .tb i{display:block;height:100%;border-radius:99px}
+.muted{color:var(--soft);font-size:13px}
+.heat{display:grid;gap:3px;font-size:12px;font-variant-numeric:tabular-nums;overflow-x:auto}
+.heat div{padding:7px 2px;text-align:center;border-radius:6px}
+.heat .h{font-weight:700;color:var(--soft)}
+.heat .c{cursor:pointer;font-weight:600}
+.heat .c.sel{outline:3px solid var(--ink)}
+.legend{display:flex;gap:12px;flex-wrap:wrap;font-size:12px;margin-top:8px;color:var(--soft)}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:4px}
+table.hard{width:100%;border-collapse:collapse;font-size:14px}
+table.hard th{text-align:left;color:var(--soft);font-weight:600;font-size:12px;padding:6px;border-bottom:1px solid #eee}
+table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
+.cellinfo{margin-top:10px;font-size:14px;min-height:20px}
+.lock{max-width:380px;margin:10vh auto 0;text-align:center}
+.lock input{font:inherit;font-size:28px;width:170px;text-align:center;padding:8px;border-radius:12px;border:2px solid #d9d2f5;margin:10px 0}
+.note{background:#fff7e0;border:1px solid #ffe2a0;border-radius:12px;padding:10px 12px;font-size:14px}
+@media(max-width:560px){.trow{grid-template-columns:80px 1fr 60px}.trow .muted{display:none}}
+</style>
+</head>
+<body>
+
+<!-- LADEN / FOUT -->
+<section class="screen active" id="bootScr">
+  <div class="wrap" style="margin-top:20vh;text-align:center;color:#fff">
+    <div class="capy bob" id="bootCapy" style="width:180px;margin:0 auto"></div>
+    <p id="bootMsg" style="font-size:20px">Even laden…</p>
+  </div>
+</section>
+
+<!-- INLOGGEN -->
+<section class="screen" id="loginScr">
+  <div class="wrap" style="margin-top:6vh">
+    <div class="capy bob" id="loginCapy" style="width:170px;margin:0 auto -8px"></div>
+    <form class="login" id="loginForm">
+      <h2>Tafelheld – inloggen</h2>
+      <div class="muted">Log één keer in op dit apparaat met het ouderaccount. Daarna kan ze hier gewoon oefenen; alles wordt bewaard in je account.</div>
+      <input type="email" id="lgEmail" placeholder="E-mailadres" autocomplete="username" required>
+      <input type="password" id="lgPw" placeholder="Wachtwoord" autocomplete="current-password" required>
+      <button class="btn primary" style="font-size:17px;padding:12px" id="lgBtn">Inloggen</button>
+      <div class="muted" id="lgMsg" style="color:#c62f3a"></div>
+    </form>
+  </div>
+</section>
+
+<!-- HOME -->
+<section class="screen" id="home">
+  <button class="parent-link" onclick="openLock()">👪 Ouders</button>
+  <div class="wrap">
+    <div class="hero">
+      <div class="capy bob" id="homeCapy"></div>
+      <h1>Tafelheld</h1>
+      <p id="homeTables">Tafel van …</p>
+    </div>
+    <button class="big-btn" onclick="startPlay()">▶ Oefenen!</button>
+    <div class="panel">
+      <b style="font-size:20px">🎁 Volgende capibara-sticker</b>
+      <div class="bar"><i id="homeBar"></i></div>
+      <small id="homeBarTxt"></small>
+    </div>
+    <button class="sec-btn" onclick="openAlbum()">📒 Mijn capibara's (<span id="albumCount">0</span>)</button>
+  </div>
+</section>
+
+<!-- PLAY -->
+<section class="screen" id="play">
+  <div class="wrap">
+    <div class="topbar">
+      <button class="pill" onclick="stopPlay()">✋ Stop</button>
+      <div class="grow">🎁<div class="bar"><i id="playBar"></i></div></div>
+      <span class="pill">⭐ <span id="stars">0</span></span>
+      <button class="pill" id="musicBtn" onclick="toggleMusic()">🎵</button>
+    </div>
+    <div class="capy playcapy" id="playCapy"></div>
+    <div class="qcard" id="qcard">
+      <div class="q" id="q"></div>
+      <div class="ans" id="ans">&nbsp;</div>
+      <div class="fb" id="fb"></div>
+    </div>
+    <div class="pad" id="pad"></div>
+  </div>
+</section>
+
+<!-- ALBUM -->
+<section class="screen" id="albumScr">
+  <div class="wrap" style="max-width:640px">
+    <div class="topbar"><button class="pill" onclick="goHome()">← Terug</button><span class="pill" style="flex:1;text-align:center">📒 Mijn capibara's</span></div>
+    <div class="album" id="album"></div>
+  </div>
+</section>
+
+<!-- OUDERSLOT -->
+<section class="screen" id="lockScr">
+  <div class="pwrap lock">
+    <h2>Alleen voor ouders</h2>
+    <p class="muted">Reken deze som uit om verder te gaan. Een rekenmachine mag.</p>
+    <div style="font-size:34px;font-weight:800" id="lockQ"></div>
+    <input id="lockIn" inputmode="numeric" autocomplete="off">
+    <div class="row" style="justify-content:center">
+      <button class="btn" onclick="goHome()">Annuleren</button>
+      <button class="btn primary" onclick="checkLock()">Open</button>
+    </div>
+    <div class="muted" id="lockMsg"></div>
+  </div>
+</section>
+
+<!-- OUDERPANEEL -->
+<section class="screen" id="parent">
+  <div class="pwrap">
+    <div class="phead">
+      <h2>👪 Ouderpaneel</h2>
+      <div class="tabs"><button id="tabA" class="on" onclick="ptab('a')">Analyse</button><button id="tabS" onclick="ptab('s')">Instellingen</button></div>
+      <span class="sp"></span>
+      <button class="btn" onclick="goHome()">Terug naar app</button>
+    </div>
+
+    <div id="pa">
+      <div id="paLoading" class="muted">Gegevens ophalen…</div>
+      <div id="paBody" style="display:none">
+        <div class="kpis" id="kpis"></div>
+        <div class="muted" id="devices" style="margin-top:8px"></div>
+        <div class="box"><h3>Oefentijd per dag (minuten, laatste 14 dagen)</h3><div class="days" id="days"></div></div>
+        <div class="box"><h3>Hoe gaat het per tafel?</h3><div id="perTable"></div></div>
+        <div class="box">
+          <h3>Alle sommen in één oogopslag</h3>
+          <div class="muted" style="margin-bottom:8px">Rij = tafel, kolom = keer-getal (rij 7, kolom 8 is 8 × 7). Getal = % goed. Tik op een vakje voor details.</div>
+          <div class="heat" id="heat"></div>
+          <div class="legend"><span><i style="background:#3ecf7e"></i>≥ 90% goed</span><span><i style="background:#c8e66a"></i>75–90%</span><span><i style="background:#ffc55c"></i>50–75%</span><span><i style="background:#ff7a7a"></i>&lt; 50%</span><span><i style="background:#eee"></i>nog niet gevraagd</span></div>
+          <div class="cellinfo" id="cellInfo"></div>
+        </div>
+        <div class="box"><h3>Sommen waar ze moeite mee heeft</h3><div id="hard"></div></div>
+      </div>
+    </div>
+
+    <div id="ps" style="display:none">
+      <div class="box">
+        <h3>Welke tafels oefent ze?</h3>
+        <div class="tgrid" id="tgrid"></div>
+        <div class="row"><button class="btn" onclick="setTables([1,2,3,4,5,6,7,8,9,10])">Alles</button><button class="btn" onclick="setTables([])">Niets</button></div>
+        <div class="muted">Wijzigingen gelden op al haar apparaten zodra ze daar opnieuw begint met oefenen.</div>
+      </div>
+      <div class="box">
+        <h3>Beloning en geluid</h3>
+        <div class="row">Nieuwe capibara na
+          <select id="rewardSel" onchange="settings.rewardMin=+this.value;store.saveSettings(settings)">
+            <option value="1">1 minuut</option><option value="3">3 minuten</option><option value="5">5 minuten</option><option value="10">10 minuten</option><option value="15">15 minuten</option>
+          </select> echt oefenen</div>
+        <div class="muted">Alleen tijd waarin ze antwoorden geeft telt mee (maximaal 30 seconden per som).</div>
+        <div class="row"><label><input type="checkbox" id="musicChk" onchange="settings.music=this.checked;store.saveSettings(settings)"> Achtergrondmuziekje tijdens oefenen</label></div>
+        <div class="row"><label><input type="checkbox" id="sfxChk" onchange="settings.sfx=this.checked;store.saveSettings(settings)"> Geluid bij goed en fout antwoord</label></div>
+        <div class="row"><button class="btn" onclick="previewSounds()">🔊 Laat de geluiden horen</button></div>
+      </div>
+      <div class="box">
+        <h3>Testen en wissen</h3>
+        <div class="row">
+          <button class="btn" id="demoBtn" onclick="loadDemo()">Vul met testdata (2 weken)</button>
+          <button class="btn danger" id="wipeBtn" onclick="wipe()">Analyse wissen</button>
+          <button class="btn danger" id="stkBtn" onclick="resetStickers()">Stickers resetten</button>
+        </div>
+        <div class="muted">"Analyse wissen" verwijdert alle oefenrondes en antwoorden, op alle apparaten. Haar stickers blijven staan, tenzij je die apart reset.</div>
+      </div>
+      <div class="box">
+        <h3>Account en opslag</h3>
+        <div id="acctInfo" class="row"></div>
+        <div class="row" id="acctBtns"></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<div class="overlay" id="ov"><div class="modal" id="modal"></div></div>
+
+<script>
+/* =========================================================
+   Tafelheld – tafels oefenen met een capibara
+   ========================================================= */
+const CFG=window.TAFELHELD_CONFIG||{};
+const WANT_ONLINE=!!(CFG.supabaseUrl&&CFG.supabaseAnonKey);
+const DEFAULTS={tables:[2,3,4,5,10],rewardMin:5,music:true,sfx:true,rewardMs:0,stickers:[]};
+const $=s=>document.querySelector(s);
+const rnd=n=>Math.floor(Math.random()*n);
+const nowIso=()=>new Date().toISOString();
+function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function uuid(){try{if(crypto.randomUUID)return crypto.randomUUID()}catch(e){}return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16)})}
+const DEVICE=/Android/i.test(navigator.userAgent)?'Android':/iPhone|iPad/i.test(navigator.userAgent)?'iPhone/iPad':'Laptop/pc';
+function show(id){document.querySelectorAll('.screen').forEach(e=>e.classList.toggle('active',e.id===id));window.scrollTo(0,0)}
+
+/* ---------- capibara ---------- */
+const CAPY_SVG=`<svg viewBox="0 0 200 160" aria-hidden="true">
+<ellipse cx="100" cy="150" rx="74" ry="7" fill="rgba(60,30,90,.16)"/>
+<rect x="44" y="116" width="21" height="32" rx="10" fill="#7a4e2c"/>
+<rect x="118" y="116" width="21" height="32" rx="10" fill="#7a4e2c"/>
+<ellipse cx="92" cy="98" rx="70" ry="45" fill="#a9733f"/>
+<ellipse cx="74" cy="84" rx="40" ry="18" fill="#b98652" opacity=".55"/>
+<rect x="62" y="122" width="21" height="28" rx="10" fill="#8d5c33"/>
+<rect x="134" y="122" width="21" height="28" rx="10" fill="#8d5c33"/>
+<ellipse cx="127" cy="42" rx="10" ry="8" fill="#7a4e2c"/>
+<ellipse cx="127" cy="43" rx="5" ry="4" fill="#5c3a20"/>
+<rect x="112" y="40" width="80" height="64" rx="28" fill="#b57d47"/>
+<rect x="160" y="54" width="36" height="46" rx="17" fill="#93603a"/>
+<ellipse cx="186" cy="66" rx="3.2" ry="4.6" fill="#3b2414"/>
+<path d="M141 61 q8 -8 16 0" stroke="#2b1a10" stroke-width="4.5" fill="none" stroke-linecap="round"/>
+<ellipse cx="152" cy="80" rx="9" ry="5.5" fill="#ff8fa8" opacity=".55"/>
+<path d="M176 90 q7 6 14 0" stroke="#3b2414" stroke-width="2.6" fill="none" stroke-linecap="round"/>
+</svg>`;
+const STICKERS=[
+['🍊','Sinaasappel-capi','head'],['🎩','Goochel-capi','head'],['👑','Prinses-capi','head'],['🎀','Strikjes-capi','head'],['🌸','Bloemen-capi','head'],
+['🧢','Pet-capi','head'],['🎓','Slimme capi','head'],['🍓','Aardbei-capi','head'],['🦋','Vlinder-capi','head'],['🐤','Kuiken-capi','head'],
+['🍄','Paddenstoel-capi','head'],['🌻','Zonnebloem-capi','head'],['🍋','Citroen-capi','head'],['🧁','Cupcake-capi','head'],['❄️','Sneeuw-capi','head'],
+['🕶️','Coole capi','eye'],['🎈','Ballon-capi','side'],['🪁','Vlieger-capi','side'],['🌈','Regenboog-capi','side'],['⭐','Sterren-capi','side'],
+['☀️','Zonnige capi','side'],['⚽','Voetbal-capi','front'],['🍉','Watermeloen-capi','front'],['🎁','Cadeau-capi','front'],['📚','Boeken-capi','front'],
+['🎸','Gitaar-capi','front'],['🍦','IJsjes-capi','front'],['🎨','Schilder-capi','front'],['🛟','Zwem-capi','front'],['🧸','Knuffel-capi','front']];
+function capy(el,acc,pos){el.innerHTML=CAPY_SVG+(acc?`<span class="acc ${pos}">${acc}</span>`:'')}
+function capyHtml(i,cls){const s=STICKERS[i];return `<div class="capy ${cls||''}">${CAPY_SVG}${s&&!cls?`<span class="acc ${s[2]}">${s[0]}</span>`:''}</div>`}
+['#bootCapy','#loginCapy','#homeCapy','#playCapy'].forEach(s=>capy($(s),'🍊','head'));
+
+/* =========================================================
+   OPSLAG – twee varianten met dezelfde functies:
+   LocalStore  = alleen dit apparaat (als config.js leeg is)
+   SupaStore   = online in Supabase (meerdere apparaten)
+   ========================================================= */
+function aggregate(answers){
+  const f={};
+  answers.forEach(a=>{const k=a.a+'x'+a.tafel,x=f[k]||(f[k]={tries:0,correct:0,ms:0,wrongs:[],last:0});
+    x.tries++;x.ms+=a.ms;if(a.correct)x.correct++;else x.wrongs.unshift(a.given);x.last=Math.max(x.last,Date.parse(a.created_at))});
+  Object.values(f).forEach(x=>x.wrongs=x.wrongs.slice(0,6));
+  return f;
+}
+const LocalStore={
+  online:false,d:null,
+  async init(){this.d=lsGet('th-local',null)||{settings:{...DEFAULTS},sessions:[],answers:[]};return true},
+  p(){lsSet('th-local',this.d)},
+  async loadSettings(){return {...DEFAULTS,...this.d.settings}},
+  saveSettings(s){this.d.settings={...s};this.p()},
+  async flushSettings(){},
+  saveSession(s){const i=this.d.sessions.findIndex(x=>x.id===s.id);if(i>-1)this.d.sessions[i]={...s};else this.d.sessions.push({...s});this.p()},
+  addAnswer(a){this.d.answers.push(a);this.p()},
+  async loadFacts(){return aggregate(this.d.answers)},
+  async loadSessions(){return this.d.sessions},
+  async wipe(){this.d.sessions=[];this.d.answers=[];this.p()},
+  async addBulk(ss,as){this.d.sessions.push(...ss);this.d.answers.push(...as);this.p()},
+  pending(){return 0},
+  account(){return 'Proefversie: alles staat alleen op dít apparaat. Vul config.js in om online op te slaan.'}
+};
+let sb=null,uid=null,userEmail='';
+const SupaStore={
+  online:true,ob:lsGet('th-outbox',{sessions:{},answers:[]}),st:null,pendingS:null,flushing:false,retryT:null,
+  async init(){
+    sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
+    const {data}=await sb.auth.getSession();
+    if(data&&data.session){uid=data.session.user.id;userEmail=data.session.user.email;return true}
+    return false;
+  },
+  async login(email,pw){const {data,error}=await sb.auth.signInWithPassword({email,password:pw});if(error)throw error;uid=data.user.id;userEmail=data.user.email},
+  async logout(){await this.flush();await sb.auth.signOut();uid=null},
+  async loadSettings(){
+    await this.flushSettings();
+    const cache=lsGet('th-settings',null);
+    try{
+      const {data,error}=await sb.from('settings').select('*').eq('user_id',uid).maybeSingle();
+      if(error)throw error;
+      if(!data)return cache||{...DEFAULTS};
+      const s={tables:data.tables||[],rewardMin:data.reward_min,music:data.music,sfx:data.sfx,rewardMs:Number(data.reward_ms)||0,stickers:data.stickers||[]};
+      lsSet('th-settings',s);return s;
+    }catch(e){console.warn(e);return cache||{...DEFAULTS}}
+  },
+  saveSettings(s){lsSet('th-settings',s);this.pendingS={...s};clearTimeout(this.st);this.st=setTimeout(()=>this.flushSettings(),1500)},
+  async flushSettings(){
+    clearTimeout(this.st);this.st=null;const s=this.pendingS;if(!s)return;
+    try{const {error}=await sb.from('settings').upsert({user_id:uid,tables:s.tables,reward_min:s.rewardMin,music:s.music,sfx:s.sfx,reward_ms:Math.round(s.rewardMs),stickers:s.stickers,updated_at:nowIso()});
+      if(error)throw error;if(this.pendingS===s)this.pendingS=null}catch(e){console.warn('instellingen niet verstuurd',e)}
+  },
+  saveOb(){lsSet('th-outbox',this.ob)},
+  saveSession(s){this.ob.sessions[s.id]={...s};this.saveOb();this.flush()},
+  addAnswer(a){this.ob.answers.push(a);this.saveOb();this.flush()},
+  pending(){return this.ob.answers.length},
+  async flush(){
+    if(this.flushing||!uid)return;this.flushing=true;let failed=false;
+    try{
+      const ss=Object.values(this.ob.sessions);
+      if(ss.length){const {error}=await sb.from('sessions').upsert(ss.map(s=>({...s,user_id:uid})));if(error)throw error;
+        ss.forEach(s=>{if(JSON.stringify(this.ob.sessions[s.id])===JSON.stringify(s))delete this.ob.sessions[s.id]})}
+      const as=this.ob.answers.slice(0,500);
+      if(as.length){const {error}=await sb.from('answers').upsert(as.map(a=>({...a,user_id:uid})));if(error)throw error;this.ob.answers.splice(0,as.length)}
+      this.saveOb();
+    }catch(e){failed=true;console.warn('nog niet verstuurd (offline?)',e)}
+    finally{this.flushing=false}
+    const left=this.ob.answers.length||Object.keys(this.ob.sessions).length;
+    if(left&&!this.retryT)this.retryT=setTimeout(()=>{this.retryT=null;this.flush()},failed?15000:300);
+  },
+  async loadFacts(){
+    await this.flush();
+    try{const {data,error}=await sb.from('fact_stats').select('*');if(error)throw error;
+      const f={};data.forEach(r=>f[r.a+'x'+r.tafel]={tries:Number(r.tries),correct:Number(r.correct_count),ms:Number(r.total_ms),wrongs:r.wrongs||[],last:Date.parse(r.last_at)});
+      lsSet('th-facts',f);return f}
+    catch(e){console.warn(e);return lsGet('th-facts',{})}
+  },
+  async loadSessions(){
+    await this.flush();let all=[],from=0;
+    for(;;){const {data,error}=await sb.from('sessions').select('*').order('started_at').range(from,from+999);if(error)throw error;all=all.concat(data);if(data.length<1000)break;from+=1000}
+    return all;
+  },
+  async wipe(){
+    this.ob={sessions:{},answers:[]};this.saveOb();
+    let r=await sb.from('answers').delete().eq('user_id',uid);if(r.error)throw r.error;
+    r=await sb.from('sessions').delete().eq('user_id',uid);if(r.error)throw r.error;
+    lsSet('th-facts',{});
+  },
+  async addBulk(ss,as){
+    let r=await sb.from('sessions').upsert(ss.map(s=>({...s,user_id:uid})));if(r.error)throw r.error;
+    for(let i=0;i<as.length;i+=500){r=await sb.from('answers').upsert(as.slice(i,i+500).map(a=>({...a,user_id:uid})));if(r.error)throw r.error}
+  },
+  account(){return `Online opslag in Supabase. Ingelogd als <b>${userEmail}</b>.`+(this.pending()?` <span class="muted">(${this.pending()} antwoorden wachten op internet)</span>`:'')}
+};
+
+let store=LocalStore,settings={...DEFAULTS},facts={};
+
+/* ---------- opstarten ---------- */
+async function boot(){
+  try{
+    if(WANT_ONLINE){
+      if(!window.supabase){$('#bootMsg').textContent='Geen verbinding. Controleer het internet en open de app opnieuw.';return}
+      store=SupaStore;
+      if(!(await store.init())){show('loginScr');return}
+    }else await LocalStore.init();
+    await afterLogin();
+  }catch(e){console.error(e);$('#bootMsg').textContent='Er ging iets mis bij het opstarten: '+(e.message||e)}
+}
+async function afterLogin(){
+  settings=await store.loadSettings();
+  goHome();
+  store.loadFacts().then(f=>facts=f).catch(()=>{});
+}
+$('#loginForm').addEventListener('submit',async e=>{
+  e.preventDefault();$('#lgMsg').textContent='';$('#lgBtn').disabled=true;
+  try{await SupaStore.login($('#lgEmail').value.trim(),$('#lgPw').value);await afterLogin()}
+  catch(err){$('#lgMsg').textContent=/invalid login/i.test(err.message)?'E-mailadres of wachtwoord klopt niet.':'Inloggen lukt niet: '+err.message}
+  finally{$('#lgBtn').disabled=false}
+});
+window.addEventListener('online',()=>{if(store.online)store.flush()});
+
+/* ---------- geluid ---------- */
+let ac=null,musicGain=null,musicTimer=null,step=0,nextT=0;
+function audio(){
+  try{if(!ac){ac=new(window.AudioContext||window.webkitAudioContext)();musicGain=ac.createGain();musicGain.connect(ac.destination)}
+    if(ac.state==='suspended')ac.resume()}catch(e){}
+  return ac;
+}
+const mf=m=>440*Math.pow(2,(m-69)/12);
+function tone(f,t,d,type,vol,dest){
+  if(!ac)return;const o=ac.createOscillator(),g=ac.createGain();
+  o.type=type||'triangle';o.frequency.setValueAtTime(f,t);
+  g.gain.setValueAtTime(0.0001,t);g.gain.exponentialRampToValueAtTime(vol,t+0.02);g.gain.exponentialRampToValueAtTime(0.0001,t+d);
+  o.connect(g);g.connect(dest||ac.destination);o.start(t);o.stop(t+d+0.05);
+}
+const MEL=[0,4,7,9,7,4,2,4, 0,2,4,7,9,null,7,null, 9,7,4,2,4,7,4,2, 0,null,2,4,0,null,null,null];
+const BASS=[48,45,41,43],STEP=0.28;
+function sched(){while(nextT<ac.currentTime+0.25){const m=MEL[step%MEL.length];
+  if(m!==null)tone(mf(72+m),nextT,STEP*0.9,'triangle',0.045,musicGain);
+  if(step%4===0)tone(mf(BASS[Math.floor(step/8)%4]),nextT,STEP*3.6,'sine',0.08,musicGain);
+  nextT+=STEP;step++}}
+function startMusic(){if(!settings.music||musicTimer||!audio())return;nextT=ac.currentTime+0.1;musicTimer=setInterval(sched,60);updMusicBtn()}
+function stopMusic(){clearInterval(musicTimer);musicTimer=null;updMusicBtn()}
+function toggleMusic(){audio();if(musicTimer){stopMusic();settings.music=false}else{settings.music=true;startMusic()}store.saveSettings(settings)}
+function updMusicBtn(){$('#musicBtn').textContent=musicTimer?'🎵':'🔇'}
+function duck(){if(!musicGain)return;const t=ac.currentTime;musicGain.gain.cancelScheduledValues(t);musicGain.gain.setValueAtTime(0.25,t);musicGain.gain.linearRampToValueAtTime(1,t+1.2)}
+function sfxGood(){if(!settings.sfx||!audio())return;duck();const t=ac.currentTime;[72,76,79,84].forEach((m,i)=>tone(mf(m),t+i*0.08,0.35,'square',0.12));tone(mf(96),t+0.34,0.3,'sine',0.08)}
+function sfxBad(){if(!settings.sfx||!audio())return;duck();const t=ac.currentTime;tone(mf(55),t,0.28,'sawtooth',0.12);tone(mf(50),t+0.28,0.5,'sawtooth',0.12)}
+function sfxFanfare(){if(!audio())return;duck();const t=ac.currentTime;[60,64,67,72,67,72,76,79].forEach((m,i)=>tone(mf(m+12),t+i*0.12,i===7?0.8:0.2,'square',0.1))}
+function previewSounds(){audio();const s=settings.sfx;settings.sfx=true;sfxGood();setTimeout(sfxBad,1200);setTimeout(()=>{sfxFanfare();settings.sfx=s},2600)}
+
+/* ---------- home & album ---------- */
+function tablesText(){const t=[...settings.tables].sort((a,b)=>a-b);if(!t.length)return 'Nog geen tafels gekozen';return 'Tafel van '+(t.length>1?t.slice(0,-1).join(', ')+' en '+t[t.length-1]:t[0])}
+function rewardPct(){return Math.min(100,settings.rewardMs/(settings.rewardMin*60000)*100)}
+function renderHome(){
+  $('#homeTables').textContent=tablesText();
+  $('#albumCount').textContent=new Set(settings.stickers).size;
+  $('#homeBar').style.width=rewardPct()+'%';
+  const left=Math.max(0,settings.rewardMin*60000-settings.rewardMs);
+  $('#homeBarTxt').textContent='Nog ongeveer '+Math.max(1,Math.ceil(left/60000))+' min oefenen';
+  const last=settings.stickers[settings.stickers.length-1];
+  if(last!==undefined&&STICKERS[last])capy($('#homeCapy'),STICKERS[last][0],STICKERS[last][2]);
+}
+function goHome(){stopMusic();closeModal();store.flushSettings();renderHome();show('home')}
+function openAlbum(){
+  const own=new Set(settings.stickers);
+  $('#album').innerHTML=STICKERS.map((s,i)=>own.has(i)?`<div class="stk">${capyHtml(i)}<span>${s[1]}</span></div>`:`<div class="stk locked">${capyHtml(i,'locked')}<span>???</span></div>`).join('');
+  show('albumScr');
+}
+
+/* ---------- oefenen ---------- */
+let cur=null,input='',qStart=0,lastAct=0,sess=null,busy=false,streak=0,stars=0;
+let retry=[],stage={},qCount=0,lastKey=null,pendingReward=false;
+function allKeys(){const k=[];settings.tables.forEach(t=>{for(let n=1;n<=10;n++)k.push(n+'x'+t)});return k}
+function pick(){
+  qCount++;
+  const di=retry.findIndex(r=>r.due<=qCount&&r.key!==lastKey);
+  if(di>-1)return retry.splice(di,1)[0].key;
+  const keys=allKeys(),w=keys.map(k=>{
+    if(k===lastKey)return 0;
+    const f=facts[k],acc=f?(f.correct+1)/(f.tries+2):0.5;
+    let x=1+(1-acc)*4;                       // vaker fout = vaker gevraagd
+    if(f&&f.tries&&f.ms/f.tries>6000)x+=0.8; // traag = nog niet geautomatiseerd
+    if(retry.some(r=>r.key===k))x*=0.2;      // staat al ingepland
+    return x});
+  let r=Math.random()*w.reduce((a,b)=>a+b,0);
+  for(let i=0;i<keys.length;i++){r-=w[i];if(r<=0)return keys[i]}
+  return keys.find(k=>k!==lastKey)||keys[0];
+}
+function schedule(key,gap){retry=retry.filter(r=>r.key!==key);retry.push({key,due:qCount+gap})}
+function buildPad(){
+  const ks=['1','2','3','4','5','6','7','8','9','del','0','ok'];
+  $('#pad').innerHTML=ks.map(k=>`<button class="${k==='ok'?'ok':k==='del'?'del':''}" data-k="${k}">${k==='del'?'⌫':k==='ok'?'✓':k}</button>`).join('');
+  $('#pad').onclick=e=>{const b=e.target.closest('button');if(b)press(b.dataset.k)};
+}
+async function startPlay(){
+  audio();
+  if(store.online){settings=await store.loadSettings();store.loadFacts().then(f=>facts=f).catch(()=>{})}
+  if(!settings.tables.length){modal(`<div class="em">🙈</div><h2>Nog geen tafels</h2><p>Vraag papa of mama om tafels te kiezen.</p><button class="big-btn" style="width:100%" onclick="goHome()">Oké</button>`);return}
+  sess={id:uuid(),started_at:nowIso(),ended_at:nowIso(),active_ms:0,correct:0,wrong:0,device:DEVICE};
+  retry=[];stage={};qCount=0;lastKey=null;streak=0;stars=0;lastAct=Date.now();
+  $('#stars').textContent='0';$('#playBar').style.width=rewardPct()+'%';
+  show('play');startMusic();next();
+}
+function next(){
+  busy=false;cur=pick();lastKey=cur;const [n,t]=cur.split('x');
+  $('#q').textContent=n+' × '+t;$('#qcard').className='qcard';$('#fb').textContent='';$('#playCapy').className='capy playcapy';
+  input='';upd();qStart=Date.now();
+}
+function upd(){$('#ans').innerHTML=input||'&nbsp;'}
+function press(k){
+  if(busy||!$('#play').classList.contains('active'))return;
+  if(k==='del')input=input.slice(0,-1);else if(k==='ok'){check();return}else if(input.length<3)input+=k;
+  upd();
+}
+const PRAISE=['Goed zo!','Super!','Knap hoor!','Yes!','Top!','Wauw!','Helemaal goed!'];
+function check(){
+  if(!input)return;busy=true;
+  const [n,t]=cur.split('x').map(Number),ans=n*t,given=+input,ok=given===ans,now=Date.now();
+  const dt=Math.min(now-qStart,30000),act=Math.min(now-lastAct,30000);
+  lastAct=now;
+  sess.active_ms+=act;sess.ended_at=nowIso();ok?sess.correct++:sess.wrong++;
+  settings.rewardMs+=act;
+  // lokaal bijhouden voor de somkeuze
+  const f=facts[cur]||(facts[cur]={tries:0,correct:0,ms:0,wrongs:[],last:0});
+  f.tries++;f.ms+=dt;f.last=now;
+  if(ok){
+    f.correct++;streak++;stars++;
+    if(stage[cur]===1){stage[cur]=2;schedule(cur,6+rnd(4))}else delete stage[cur]; // na fout: nog één controle later
+    $('#qcard').className='qcard good';$('#playCapy').className='capy playcapy hop';
+    $('#fb').textContent=streak%5===0?`🔥 ${streak} op een rij!`:PRAISE[rnd(PRAISE.length)];
+    $('#stars').textContent=stars;sfxGood();
+    if(streak%5===0)confetti(['⭐','✨','🌟','🍊'],14);
+  }else{
+    f.wrongs.unshift(given);f.wrongs=f.wrongs.slice(0,6);
+    streak=0;stage[cur]=1;schedule(cur,3+rnd(3)); // niet direct, maar na 3 tot 5 andere sommen
+    $('#qcard').className='qcard bad';$('#playCapy').className='capy playcapy sad';
+    $('#fb').innerHTML=`Het is <span style="color:var(--good)">${n} × ${t} = ${ans}</span>`;
+    sfxBad();
+  }
+  store.saveSession(sess);
+  store.addAnswer({id:uuid(),session_id:sess.id,a:n,tafel:t,given,correct:ok,ms:dt,created_at:nowIso()});
+  const target=settings.rewardMin*60000;
+  if(settings.rewardMs>=target){settings.rewardMs-=target;pendingReward=true}
+  store.saveSettings(settings);
+  $('#playBar').style.width=rewardPct()+'%';
+  setTimeout(()=>{if(!$('#play').classList.contains('active'))return;if(pendingReward){pendingReward=false;giveSticker()}else next()},ok?950:2300);
+}
+function giveSticker(){
+  const own=new Set(settings.stickers);
+  let free=STICKERS.map((_,i)=>i).filter(i=>!own.has(i));if(!free.length)free=STICKERS.map((_,i)=>i);
+  const i=free[rnd(free.length)];settings.stickers=[...settings.stickers,i];store.saveSettings(settings);store.flushSettings();
+  sfxFanfare();confetti(['🎉','⭐','🎈','💖','🍊'],30);
+  modal(`${capyHtml(i)}<h2>Nieuwe capibara!</h2><p>Je hebt de <b>${STICKERS[i][1]}</b> verdiend omdat je zo goed oefent.</p><button class="big-btn" style="width:100%" onclick="closeModal();next()">Verder oefenen</button><button class="sec-btn" style="width:100%;margin-top:10px" onclick="closeModal();stopPlay()">Stoppen</button>`);
+}
+function stopPlay(){
+  stopMusic();store.flushSettings();
+  const c=sess?sess.correct:0;
+  modal(`${capyHtml(settings.stickers.length?settings.stickers[settings.stickers.length-1]:0)}<h2>${c?'Goed gedaan!':'Tot zo!'}</h2><p>${c?`Je hebt <b>${c}</b> ${c===1?'som':'sommen'} goed gedaan. ⭐`:'Kom je straks weer oefenen?'}</p><button class="big-btn" style="width:100%" onclick="goHome()">Klaar</button>`);
+  sess=null;
+}
+function modal(h){$('#modal').innerHTML=h;$('#ov').classList.add('show')}
+function closeModal(){$('#ov').classList.remove('show')}
+function confetti(set,n){for(let i=0;i<n;i++){const s=document.createElement('div');s.className='confetti';s.textContent=set[rnd(set.length)];
+  s.style.left=rnd(100)+'vw';s.style.animationDuration=(1.6+Math.random()*1.6)+'s';s.style.animationDelay=(Math.random()*.4)+'s';
+  document.body.appendChild(s);setTimeout(()=>s.remove(),3800)}}
+document.addEventListener('keydown',e=>{
+  if(!$('#play').classList.contains('active')||$('#ov').classList.contains('show'))return;
+  if(/^[0-9]$/.test(e.key))press(e.key);else if(e.key==='Backspace')press('del');else if(e.key==='Enter')press('ok');
+});
+document.addEventListener('visibilitychange',()=>{if(document.hidden){stopMusic();store.flushSettings()}else if($('#play').classList.contains('active'))startMusic()});
+
+/* ---------- ouderslot: twee getallen van twee cijfers ---------- */
+let lockAns=0;
+function hardNum(lo,hi){let x;do{x=lo+rnd(hi-lo+1)}while(x%10===0||x%11===0);return x}
+function openLock(){
+  const a=hardNum(23,98),b=hardNum(13,39);lockAns=a*b;
+  $('#lockQ').textContent=a+' × '+b+' = ?';$('#lockIn').value='';$('#lockMsg').textContent='';
+  show('lockScr');setTimeout(()=>$('#lockIn').focus(),50);
+}
+$('#lockIn').addEventListener('keydown',e=>{if(e.key==='Enter')checkLock()});
+function checkLock(){if(+$('#lockIn').value===lockAns)openParent();else{$('#lockMsg').textContent='Dat klopt niet. Hier is een nieuwe som.';const m=$('#lockMsg').textContent;openLock();$('#lockMsg').textContent=m}}
+function openParent(){renderSettings();ptab('a');show('parent')}
+function ptab(w){$('#pa').style.display=w==='a'?'':'none';$('#ps').style.display=w==='s'?'':'none';$('#tabA').classList.toggle('on',w==='a');$('#tabS').classList.toggle('on',w==='s');if(w==='a')renderAnalysis();else renderSettings()}
+
+/* ---------- instellingen ---------- */
+function renderSettings(){
+  $('#tgrid').innerHTML=[1,2,3,4,5,6,7,8,9,10].map(t=>`<button class="${settings.tables.includes(t)?'on':''}" onclick="toggleTable(${t})">${t}</button>`).join('');
+  $('#rewardSel').value=settings.rewardMin;$('#musicChk').checked=settings.music;$('#sfxChk').checked=settings.sfx;
+  $('#acctInfo').innerHTML=store.account();
+  $('#acctBtns').innerHTML=store.online?`<button class="btn" id="logoutBtn" onclick="logout()">Uitloggen op dit apparaat</button>`:'';
+}
+function toggleTable(t){const s=settings.tables;settings.tables=s.includes(t)?s.filter(x=>x!==t):[...s,t].sort((a,b)=>a-b);store.saveSettings(settings);renderSettings()}
+function setTables(a){settings.tables=a;store.saveSettings(settings);renderSettings()}
+const armed={};
+function confirmTwice(id,label,fn){
+  const b=$('#'+id);
+  if(!armed[id]){armed[id]=true;b.textContent='Zeker weten? Klik nog eens';setTimeout(()=>{if(armed[id]){armed[id]=false;b.textContent=label}},4000);return}
+  armed[id]=false;fn(b);
+}
+function wipe(){confirmTwice('wipeBtn','Analyse wissen',async b=>{
+  b.disabled=true;b.textContent='Bezig…';
+  try{await store.wipe();facts={};b.textContent='Gewist ✓'}catch(e){b.textContent='Mislukt: '+e.message}
+  b.disabled=false;setTimeout(()=>b.textContent='Analyse wissen',3000);
+})}
+function resetStickers(){confirmTwice('stkBtn','Stickers resetten',async b=>{
+  settings.stickers=[];settings.rewardMs=0;store.saveSettings(settings);await store.flushSettings();
+  b.textContent='Gereset ✓';setTimeout(()=>b.textContent='Stickers resetten',3000);
+})}
+function logout(){confirmTwice('logoutBtn','Uitloggen op dit apparaat',async()=>{await store.logout();show('loginScr')})}
+async function loadDemo(){
+  const b=$('#demoBtn');b.disabled=true;b.textContent='Bezig…';
+  const hard={'7x4':.45,'8x4':.55,'6x3':.6,'9x3':.5,'7x3':.62,'8x5':.72,'6x4':.7,'9x4':.66};
+  const T=[2,3,4,5,10],now=Date.now(),ss=[],as=[];
+  for(let d=13;d>=0;d--){
+    if(Math.random()<0.3)continue;
+    const nS=Math.random()<0.25?2:1;
+    for(let s=0;s<nS;s++){
+      const st=new Date(now-d*864e5);st.setHours(16+s*2,rnd(50),0,0);if(+st>now)st.setTime(now-3600e3);
+      const S={id:uuid(),started_at:st.toISOString(),active_ms:0,correct:0,wrong:0,device:Math.random()<.6?'Android':'Laptop/pc'};
+      let t0=+st;const q=14+rnd(26);
+      for(let i=0;i<q;i++){
+        const t=T[rnd(5)],n=1+rnd(10),k=n+'x'+t,ans=n*t;
+        let p=hard[k]!==undefined?hard[k]:(t===2||t===10?.97:t===5?.92:.86);p=Math.min(.99,p+(13-d)*.012);
+        const ok=Math.random()<p,ms=(ok?2200+rnd(3500):5000+rnd(5000))+(hard[k]!==undefined?2500:0);
+        t0+=ms+1200;ok?S.correct++:S.wrong++;S.active_ms+=ms+1200;
+        as.push({id:uuid(),session_id:S.id,a:n,tafel:t,given:ok?ans:ans+[t,-t,1,-1,t][rnd(5)],correct:ok,ms,created_at:new Date(t0).toISOString()});
+      }
+      S.ended_at=new Date(t0).toISOString();ss.push(S);
+    }
+  }
+  try{await store.addBulk(ss,as);facts=await store.loadFacts();b.textContent='Toegevoegd ✓';setTimeout(()=>ptab('a'),600)}
+  catch(e){b.textContent='Mislukt: '+e.message}
+  b.disabled=false;setTimeout(()=>b.textContent='Vul met testdata (2 weken)',3000);
+}
+
+/* ---------- analyse ---------- */
+function fmt(ms){const m=Math.round(ms/60000);if(ms<60000)return Math.round(ms/1000)+' sec';if(m<60)return m+' min';return Math.floor(m/60)+' u '+(m%60)+' min'}
+function col(a){return a>=.9?'#3ecf7e':a>=.75?'#c8e66a':a>=.5?'#ffc55c':'#ff7a7a'}
+function mostCommon(a){const c={};a.forEach(x=>c[x]=(c[x]||0)+1);return Object.entries(c).sort((x,y)=>y[1]-x[1]).map(x=>x[0])}
+async function renderAnalysis(){
+  $('#paLoading').style.display='';$('#paLoading').textContent='Gegevens ophalen…';$('#paBody').style.display='none';
+  let F,S;
+  try{[F,S]=await Promise.all([store.loadFacts(),store.loadSessions()])}
+  catch(e){$('#paLoading').textContent='Kon de gegevens niet ophalen: '+e.message;return}
+  facts=F;S=S.filter(s=>s.correct+s.wrong>0);
+  $('#paLoading').style.display='none';$('#paBody').style.display='';
+  const tot=S.reduce((a,s)=>a+s.active_ms,0),good=S.reduce((a,s)=>a+s.correct,0),all=S.reduce((a,s)=>a+s.correct+s.wrong,0);
+  const days=new Set(S.map(s=>new Date(s.started_at).toDateString())).size;
+  const last=S.length?new Date(S[S.length-1].started_at):null;
+  $('#kpis').innerHTML=[
+    [fmt(tot),'totaal geoefend'],[S.length,`keer geoefend (${days} ${days===1?'dag':'dagen'})`],[S.length?fmt(tot/S.length):'–','gemiddeld per keer'],
+    [all?Math.round(good/all*100)+'%':'–',`goed (${all} sommen)`],[last?last.toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'}):'–','laatst geoefend']
+  ].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
+  const dev={};S.forEach(s=>dev[s.device||'?']=(dev[s.device||'?']||0)+1);
+  $('#devices').textContent=S.length?'Geoefend op: '+Object.entries(dev).map(([k,v])=>`${k} (${v}×)`).join(', '):'';
+
+  const per=[];for(let d=13;d>=0;d--){const dt=new Date();dt.setHours(0,0,0,0);dt.setDate(dt.getDate()-d);per.push({dt,ms:0})}
+  S.forEach(s=>{const k=new Date(s.started_at);k.setHours(0,0,0,0);const p=per.find(x=>+x.dt===+k);if(p)p.ms+=s.active_ms});
+  const mx=Math.max(60000,...per.map(p=>p.ms));
+  $('#days').innerHTML=per.map(p=>`<div class="d"><em>${p.ms?Math.max(1,Math.round(p.ms/60000)):''}</em><i style="height:${p.ms/mx*80}%"></i>${p.dt.toLocaleDateString('nl-NL',{weekday:'narrow'})}<br>${p.dt.getDate()}</div>`).join('');
+
+  const rows=[];
+  for(let t=1;t<=10;t++){let tr=0,co=0,ms=0;for(let n=1;n<=10;n++){const f=F[n+'x'+t];if(f){tr+=f.tries;co+=f.correct;ms+=f.ms}}if(tr)rows.push({t,tr,co,ms})}
+  $('#perTable').innerHTML=rows.length?rows.sort((a,b)=>a.co/a.tr-b.co/b.tr).map(r=>{const a=r.co/r.tr;return `<div class="trow"><b>Tafel van ${r.t}</b><div class="tb"><i style="width:${a*100}%;background:${col(a)}"></i></div><span>${Math.round(a*100)}% goed</span><span class="muted">${(r.ms/r.tr/1000).toFixed(1)} sec/som</span></div>`}).join('')
+    +'<div class="muted" style="margin-top:6px">Van moeilijkst naar makkelijkst. Meer dan 5 seconden per som betekent meestal: nog uitrekenen in plaats van uit het hoofd weten.</div>'
+    :'<div class="muted">Nog geen gegevens. Laat haar eerst oefenen, of kies bij Instellingen "Vul met testdata".</div>';
+
+  const tl=[...new Set([...settings.tables,...rows.map(r=>r.t)])].sort((a,b)=>a-b);
+  let h='<div class="h"></div>'+[1,2,3,4,5,6,7,8,9,10].map(n=>`<div class="h">${n}×</div>`).join('');
+  tl.forEach(t=>{h+=`<div class="h">${t}</div>`;for(let n=1;n<=10;n++){const f=F[n+'x'+t];
+    h+=f?`<div class="c" style="background:${col(f.correct/f.tries)}" data-k="${n}x${t}">${Math.round(f.correct/f.tries*100)}</div>`:`<div class="c" style="background:#eee;color:#aaa" data-k="${n}x${t}">·</div>`}});
+  const hm=$('#heat');hm.style.gridTemplateColumns='30px repeat(10,minmax(28px,1fr))';hm.innerHTML=h;$('#cellInfo').textContent='';
+  hm.onclick=e=>{const c=e.target.closest('.c');if(!c)return;hm.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');
+    const k=c.dataset.k,[n,t]=k.split('x').map(Number),f=F[k];
+    $('#cellInfo').innerHTML=f?`<b>${n} × ${t} = ${n*t}</b>: ${f.tries}× gevraagd, ${f.correct}× goed, gemiddeld ${(f.ms/f.tries/1000).toFixed(1)} sec.`+(f.wrongs.length?` Laatste foute antwoorden: ${f.wrongs.join(', ')}.`:''):`<b>${n} × ${t}</b> is nog niet gevraagd.`};
+
+  const hard=Object.entries(F).filter(([,f])=>f.tries>=2).map(([k,f])=>{const err=1-f.correct/f.tries,sec=f.ms/f.tries/1000;return{k,f,err,sec,score:err*2+Math.max(0,sec-4)/6}})
+    .filter(x=>x.score>0.25).sort((a,b)=>b.score-a.score).slice(0,10);
+  $('#hard').innerHTML=hard.length?`<table class="hard"><tr><th>Som</th><th>Goed</th><th>Tijd</th><th>Zegt vaak</th><th>Wat valt op</th></tr>`+hard.map(x=>{const [n,t]=x.k.split('x').map(Number);
+    const note=x.err>=.3?'vaak fout':x.sec>6?'goed, maar traag (rekent nog)':'soms fout';
+    return `<tr><td><b>${n} × ${t} = ${n*t}</b></td><td>${x.f.correct}/${x.f.tries}</td><td>${x.sec.toFixed(1)} s</td><td>${mostCommon(x.f.wrongs).slice(0,2).join(', ')||'–'}</td><td>${note}</td></tr>`}).join('')+'</table>'
+    :'<div class="muted">Geen opvallende probleemsommen (een som moet minstens 2 keer gevraagd zijn).</div>';
+}
+
+/* ---------- installeerbaar maken (Android: "Toevoegen aan startscherm") ---------- */
+try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
+
+buildPad();boot();
+</script>
+</body>
+</html>
