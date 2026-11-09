@@ -57,7 +57,33 @@ button{font-family:inherit;color:inherit;border:0;cursor:pointer}
 .pill{background:rgba(255,255,255,.9);border-radius:99px;padding:6px 14px;font-size:20px;font-weight:800;white-space:nowrap}
 .topbar .grow{flex:1;background:rgba(255,255,255,.9);border-radius:99px;padding:6px 12px;display:flex;align-items:center;gap:8px;font-size:20px}
 .topbar .grow .bar{flex:1;margin:0;height:14px}
-.playcapy{width:120px;margin:-4px auto -30px;position:relative;z-index:2}
+.streakrow{background:rgba(255,255,255,.9);border-radius:99px;padding:4px 14px;font-size:18px;font-weight:700;text-align:center;transition:background .3s}
+.streakrow.gold{background:linear-gradient(90deg,#ffd84d,#ffb347);animation:pop .5s}
+.record{font-size:19px;font-weight:700;background:rgba(255,255,255,.25);border-radius:99px;padding:2px 14px;margin-top:6px}
+.timer{height:12px;background:var(--lav);border-radius:99px;overflow:hidden;margin:12px auto 0;width:70%}
+.timer>i{display:block;height:100%;width:100%;background:var(--good);border-radius:99px}
+.timer.late>i{background:#ffb347}
+.knowbtn{width:100%;background:var(--sun);font-size:36px;font-weight:800;border-radius:24px;box-shadow:0 6px 0 #e0a516;height:calc(4*clamp(56px,8.5vh,74px) + 30px);touch-action:manipulation}
+.knowbtn:active{transform:translateY(4px);box-shadow:0 2px 0 #e0a516}
+.skip{background:none;color:#fff;font-size:17px;font-weight:700;text-decoration:underline;padding:6px}
+.judge{display:grid;gap:12px}
+.judge button{font-size:25px;font-weight:800;padding:18px;border-radius:20px;color:#fff}
+.j-ok{background:var(--good);box-shadow:0 5px 0 #168a4b}.j-late{background:#ff9f43;box-shadow:0 5px 0 #d97a1c}.j-bad{background:var(--bad);box-shadow:0 5px 0 #c63c41}
+.judge button:active{transform:translateY(3px)}
+.peek{font-size:22px;color:var(--soft);min-height:30px;margin-top:6px;font-weight:700}
+.choice{background:#fff;border-radius:24px;padding:18px;text-align:left;box-shadow:0 6px 0 #d6ccff;display:flex;gap:14px;align-items:center}
+.choice:active{transform:translateY(3px)}
+.choice b{font-size:25px;display:block;line-height:1.1}.choice span{font-size:17px;color:var(--soft);line-height:1.2;display:block;margin-top:4px}.choice .ic{font-size:48px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;justify-content:center;margin:8px 0 14px}
+.chips span{background:var(--lav);border-radius:99px;padding:3px 10px;font-weight:700;font-size:16px}
+.seg{display:inline-flex;background:#f1eefc;border-radius:10px;padding:3px;gap:3px;margin-bottom:10px;flex-wrap:wrap}
+.seg button{background:none;padding:6px 10px;border-radius:8px;font-size:13px;font-weight:600;font-family:inherit}
+.seg button.on{background:#7b5cff;color:#fff}
+.tbars{display:flex;align-items:flex-end;gap:6px;height:110px;margin:6px 0 14px}
+.tbars .d{flex:1;max-width:46px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;font-size:10px;color:var(--soft);text-align:center}
+.tbars .d i{display:block;width:100%;border-radius:5px 5px 2px 2px;min-height:2px}
+.tbars .d em{font-style:normal;font-weight:700;color:var(--ink)}
+.playcapy{width:120px;margin:16px auto -30px;position:relative;z-index:2}
 .qcard{background:var(--card);border-radius:30px;padding:30px 16px 14px;text-align:center;box-shadow:0 10px 0 rgba(80,50,160,.18);min-height:190px;display:flex;flex-direction:column;justify-content:center}
 .q{font-size:clamp(54px,15vw,86px);font-weight:800;line-height:1}
 .ans{font-size:clamp(42px,12vw,64px);font-weight:800;min-height:1.25em;margin:6px auto 0;color:#7b5cff;border-bottom:4px dashed #d9d0ff;width:60%}
@@ -128,7 +154,7 @@ select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid #d9d2f5}
 .days .d{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;gap:3px;font-size:10px;color:var(--soft);text-align:center}
 .days .d i{display:block;width:100%;max-width:26px;background:#7b5cff;border-radius:5px 5px 2px 2px;min-height:2px}
 .days .d em{font-style:normal;font-size:10px;color:var(--ink);font-weight:600}
-.trow{display:grid;grid-template-columns:95px 1fr 72px 92px;gap:10px;align-items:center;font-size:14px;padding:5px 0}
+.trow{display:grid;grid-template-columns:95px 1fr 84px 100px 96px;white-space:nowrap;gap:10px;align-items:center;font-size:14px;padding:5px 0}
 .trow .tb{height:14px;background:#f0edfb;border-radius:99px;overflow:hidden}
 .trow .tb i{display:block;height:100%;border-radius:99px}
 .muted{color:var(--soft);font-size:13px}
@@ -146,7 +172,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
 .lock{max-width:380px;margin:10vh auto 0;text-align:center}
 .lock input{font:inherit;font-size:28px;width:170px;text-align:center;padding:8px;border-radius:12px;border:2px solid #d9d2f5;margin:10px 0}
 .note{background:#fff7e0;border:1px solid #ffe2a0;border-radius:12px;padding:10px 12px;font-size:14px}
-@media(max-width:560px){.trow{grid-template-columns:80px 1fr 60px}.trow .muted{display:none}}
+@media(max-width:560px){.trow{grid-template-columns:78px 1fr 60px 70px}.trow .muted{display:none}}
 </style>
 </head>
 <body>
@@ -182,8 +208,10 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
       <div class="capy bob" id="homeCapy"></div>
       <h1>Tafelheld</h1>
       <p id="homeTables">Tafel van …</p>
+      <div class="record" id="homeRecord" style="display:none"></div>
     </div>
     <button class="big-btn" onclick="startPlay()">▶ Oefenen!</button>
+    <button class="sec-btn" onclick="openTestMenu()">⚡ Toets: ben ik al snel genoeg?</button>
     <div class="panel">
       <b style="font-size:20px">🎁 Volgende capibara-sticker</b>
       <div class="bar"><i id="homeBar"></i></div>
@@ -202,6 +230,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
       <span class="pill">⭐ <span id="stars">0</span></span>
       <button class="pill" id="musicBtn" onclick="toggleMusic()">🎵</button>
     </div>
+    <div class="streakrow" id="streakRow"></div>
     <div class="capy playcapy" id="playCapy"></div>
     <div class="qcard" id="qcard">
       <div class="q" id="q"></div>
@@ -209,6 +238,42 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
       <div class="fb" id="fb"></div>
     </div>
     <div class="pad" id="pad"></div>
+  </div>
+</section>
+
+<!-- TOETSKEUZE -->
+<section class="screen" id="testMenu">
+  <div class="wrap">
+    <div class="topbar"><button class="pill" onclick="goHome()">← Terug</button><span class="pill" style="flex:1;text-align:center">⚡ Toets</span></div>
+    <div class="capy bob" id="tmCapy" style="width:150px;margin:6px auto -6px"></div>
+    <div class="panel" style="text-align:center;font-size:19px">Op school moet je het antwoord binnen <b><span id="tmSec">3</span> seconden</b> weten. Ben jij al zo snel?</div>
+    <button class="choice" onclick="startTest('zelf')"><div class="ic">⚡</div><div><b>Bliksemronde</b><span>Druk op de knop zodra je het antwoord weet. Daarna tik je het in.</span></div></button>
+    <button class="choice" onclick="openLock('quiz')"><div class="ic">👪</div><div><b>Overhoren</b><span>Papa of mama overhoort je. Jij zegt het antwoord hardop.</span></div></button>
+  </div>
+</section>
+
+<!-- TOETS -->
+<section class="screen" id="test">
+  <div class="wrap">
+    <div class="topbar"><button class="pill" onclick="stopTest()">✋ Stop</button><span class="pill" style="flex:1;text-align:center" id="tProg">1 / 20</span><span class="pill">⚡ <span id="tVlot">0</span></span></div>
+    <div class="qcard" id="tcard" style="margin-top:6px">
+      <div class="q" id="tq"></div>
+      <div class="timer" id="tTimer"><i></i></div>
+      <div class="ans" id="tans" style="display:none">&nbsp;</div>
+      <div class="peek" id="tpeek"></div>
+      <div class="fb" id="tfb"></div>
+    </div>
+    <div id="tZelf">
+      <button class="knowbtn" id="knowBtn">Ik weet het! ⚡</button>
+      <div class="pad" id="tpad" style="display:none"></div>
+      <div style="text-align:center"><button class="skip" id="skipBtn" onclick="skipTest()">Weet ik niet</button></div>
+    </div>
+    <div class="judge" id="tJudge">
+      <div class="panel" style="text-align:center;font-size:16px;padding:8px 12px">👪 Zij zegt het antwoord hardop. Jij tikt wat er gebeurde.</div>
+      <button class="j-ok" onclick="judge('vlot')">✅ Op tijd goed</button>
+      <button class="j-late" onclick="judge('laat')">🐢 Goed, maar te laat</button>
+      <button class="j-bad" onclick="judge('fout')">❌ Fout of weet het niet</button>
+    </div>
   </div>
 </section>
 
@@ -254,12 +319,14 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
         <div class="box"><h3>Hoe gaat het per tafel?</h3><div id="perTable"></div></div>
         <div class="box">
           <h3>Alle sommen in één oogopslag</h3>
-          <div class="muted" style="margin-bottom:8px">Rij = tafel, kolom = keer-getal (rij 7, kolom 8 is 8 × 7). Getal = % goed. Tik op een vakje voor details.</div>
+          <div class="seg" id="heatSeg"></div>
+          <div class="muted" style="margin-bottom:8px" id="heatExpl"></div>
           <div class="heat" id="heat"></div>
-          <div class="legend"><span><i style="background:#3ecf7e"></i>≥ 90% goed</span><span><i style="background:#c8e66a"></i>75–90%</span><span><i style="background:#ffc55c"></i>50–75%</span><span><i style="background:#ff7a7a"></i>&lt; 50%</span><span><i style="background:#eee"></i>nog niet gevraagd</span></div>
+          <div class="legend" id="heatLegend"></div>
           <div class="cellinfo" id="cellInfo"></div>
         </div>
         <div class="box"><h3>Sommen waar ze moeite mee heeft</h3><div id="hard"></div></div>
+        <div class="box"><h3>Toetsen</h3><div id="testsBox"></div></div>
       </div>
     </div>
 
@@ -282,13 +349,22 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
         <div class="row"><button class="btn" onclick="previewSounds()">🔊 Laat de geluiden horen</button></div>
       </div>
       <div class="box">
+        <h3>Toets</h3>
+        <div class="row">Aantal sommen per toets
+          <select id="testNSel" onchange="settings.testN=+this.value;store.saveSettings(settings)"><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="0">alle sommen van de gekozen tafels</option></select></div>
+        <div class="row">Tijd per som
+          <select id="testSecSel" onchange="settings.testSec=+this.value;store.saveSettings(settings)"><option value="3">3 seconden (zoals op school)</option><option value="4">4 seconden</option><option value="5">5 seconden</option></select></div>
+        <div class="muted"><b>Bliksemronde</b> (zelf): een som telt als ⚡ vlot als ze binnen die tijd op "Ik weet het!" drukt, daarna binnen 2 seconden begint met intikken, en het antwoord goed is. <b>Overhoren</b>: jij beoordeelt het; de app telt zichtbaar af en laat na afloop van de tijd het antwoord klein zien.</div>
+        <div class="row"><button class="btn primary" onclick="startTest('overhoor')">👪 Nu overhoren</button></div>
+      </div>
+      <div class="box">
         <h3>Testen en wissen</h3>
         <div class="row">
           <button class="btn" id="demoBtn" onclick="loadDemo()">Vul met testdata (2 weken)</button>
           <button class="btn danger" id="wipeBtn" onclick="wipe()">Analyse wissen</button>
-          <button class="btn danger" id="stkBtn" onclick="resetStickers()">Stickers resetten</button>
+          <button class="btn danger" id="stkBtn" onclick="resetStickers()">Stickers en record resetten</button>
         </div>
-        <div class="muted">"Analyse wissen" verwijdert alle oefenrondes en antwoorden, op alle apparaten. Haar stickers blijven staan, tenzij je die apart reset.</div>
+        <div class="muted">"Analyse wissen" verwijdert alle oefenrondes, antwoorden en toetsen, op alle apparaten. Haar stickers en haar record blijven staan, tenzij je die apart reset.</div>
       </div>
       <div class="box">
         <h3>Account en opslag</h3>
@@ -307,7 +383,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
    ========================================================= */
 const CFG=window.TAFELHELD_CONFIG||{};
 const WANT_ONLINE=!!(CFG.supabaseUrl&&CFG.supabaseAnonKey);
-const DEFAULTS={tables:[2,3,4,5,10],rewardMin:5,music:true,sfx:true,rewardMs:0,stickers:[]};
+const DEFAULTS={tables:[2,3,4,5,10],rewardMin:5,music:true,sfx:true,rewardMs:0,stickers:[],bestStreak:0,bestStreakAt:null,testN:20,testSec:3};
 const $=s=>document.querySelector(s);
 const rnd=n=>Math.floor(Math.random()*n);
 const nowIso=()=>new Date().toISOString();
@@ -344,7 +420,7 @@ const STICKERS=[
 ['🎸','Gitaar-capi','front'],['🍦','IJsjes-capi','front'],['🎨','Schilder-capi','front'],['🛟','Zwem-capi','front'],['🧸','Knuffel-capi','front']];
 function capy(el,acc,pos){el.innerHTML=CAPY_SVG+(acc?`<span class="acc ${pos}">${acc}</span>`:'')}
 function capyHtml(i,cls){const s=STICKERS[i];return `<div class="capy ${cls||''}">${CAPY_SVG}${s&&!cls?`<span class="acc ${s[2]}">${s[0]}</span>`:''}</div>`}
-['#bootCapy','#loginCapy','#homeCapy','#playCapy'].forEach(s=>capy($(s),'🍊','head'));
+['#bootCapy','#loginCapy','#homeCapy','#playCapy','#tmCapy'].forEach(s=>capy($(s),'🍊','head'));
 
 /* =========================================================
    OPSLAG – twee varianten met dezelfde functies:
@@ -353,31 +429,55 @@ function capyHtml(i,cls){const s=STICKERS[i];return `<div class="capy ${cls||''}
    ========================================================= */
 function aggregate(answers){
   const f={};
-  answers.forEach(a=>{const k=a.a+'x'+a.tafel,x=f[k]||(f[k]={tries:0,correct:0,ms:0,wrongs:[],last:0});
-    x.tries++;x.ms+=a.ms;if(a.correct)x.correct++;else x.wrongs.unshift(a.given);x.last=Math.max(x.last,Date.parse(a.created_at))});
+  answers.forEach(a=>{const k=a.a+'x'+a.tafel,x=f[k]||(f[k]={tries:0,correct:0,ms:0,wrongs:[],last:0,timedAll:0,timedOk:0,fsum:0,quick:0});
+    x.tries++;x.ms+=a.ms;if(a.correct)x.correct++;else x.wrongs.unshift(a.given);x.last=Math.max(x.last,Date.parse(a.created_at));
+    if(a.first_ms!=null){x.timedAll++;if(a.correct){x.timedOk++;x.fsum+=a.first_ms;if(a.first_ms<=3000)x.quick++}}});
   Object.values(f).forEach(x=>x.wrongs=x.wrongs.slice(0,6));
   return f;
 }
 const LocalStore={
   online:false,d:null,
-  async init(){this.d=lsGet('th-local',null)||{settings:{...DEFAULTS},sessions:[],answers:[]};return true},
+  async init(){
+    this.d=lsGet('th-local',null)||{settings:{...DEFAULTS},sessions:[],answers:[]};
+    this.d.tests=this.d.tests||[];this.d.testAnswers=this.d.testAnswers||[];return true},
   p(){lsSet('th-local',this.d)},
   async loadSettings(){return {...DEFAULTS,...this.d.settings}},
   saveSettings(s){this.d.settings={...s};this.p()},
   async flushSettings(){},
   saveSession(s){const i=this.d.sessions.findIndex(x=>x.id===s.id);if(i>-1)this.d.sessions[i]={...s};else this.d.sessions.push({...s});this.p()},
   addAnswer(a){this.d.answers.push(a);this.p()},
+  saveTest(t){const i=this.d.tests.findIndex(x=>x.id===t.id);if(i>-1)this.d.tests[i]={...t};else this.d.tests.push({...t});this.p()},
+  addTestAnswer(a){this.d.testAnswers.push(a);this.p()},
   async loadFacts(){return aggregate(this.d.answers)},
   async loadSessions(){return this.d.sessions},
-  async wipe(){this.d.sessions=[];this.d.answers=[];this.p()},
-  async addBulk(ss,as){this.d.sessions.push(...ss);this.d.answers.push(...as);this.p()},
+  async loadTests(){return {tests:this.d.tests,answers:this.d.testAnswers}},
+  async wipe(){this.d.sessions=[];this.d.answers=[];this.d.tests=[];this.d.testAnswers=[];this.p()},
+  async addBulk(ss,as,ts,tas){this.d.sessions.push(...ss);this.d.answers.push(...as);this.d.tests.push(...(ts||[]));this.d.testAnswers.push(...(tas||[]));this.p()},
   pending(){return 0},
   account(){return 'Proefversie: alles staat alleen op dít apparaat. Vul config.js in om online op te slaan.'}
 };
 let sb=null,uid=null,userEmail='';
+// Werkt ook als een database-update nog niet is uitgevoerd: ontbrekende kolommen worden weggelaten
+const missingCols=new Set();let missingTables=false;
+function strip(o){if(!missingCols.size)return o;const c={...o};missingCols.forEach(k=>delete c[k]);return c}
+async function safeUpsert(table,rows){
+  for(let i=0;i<6;i++){
+    const r=await sb.from(table).upsert(rows.map(strip));
+    const m=r.error&&/'(\w+)' column/.exec(r.error.message||'');
+    if(m&&!missingCols.has(m[1])){missingCols.add(m[1]);console.warn('kolom ontbreekt in database:',m[1]);continue}
+    return r;
+  }
+  return {error:{message:'te veel ontbrekende kolommen'}};
+}
+async function fetchAll(table,order){
+  let all=[],from=0;
+  for(;;){const {data,error}=await sb.from(table).select('*').order(order).range(from,from+999);if(error)throw error;all=all.concat(data);if(data.length<1000)break;from+=1000}
+  return all;
+}
 const SupaStore={
   online:true,ob:lsGet('th-outbox',{sessions:{},answers:[]}),st:null,pendingS:null,flushing:false,retryT:null,
   async init(){
+    this.ob.tests=this.ob.tests||{};this.ob.testAnswers=this.ob.testAnswers||[];
     sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
     const {data}=await sb.auth.getSession();
     if(data&&data.session){uid=data.session.user.id;userEmail=data.session.user.email;return true}
@@ -392,57 +492,79 @@ const SupaStore={
       const {data,error}=await sb.from('settings').select('*').eq('user_id',uid).maybeSingle();
       if(error)throw error;
       if(!data)return cache||{...DEFAULTS};
-      const s={tables:data.tables||[],rewardMin:data.reward_min,music:data.music,sfx:data.sfx,rewardMs:Number(data.reward_ms)||0,stickers:data.stickers||[]};
+      const s={tables:data.tables||[],rewardMin:data.reward_min,music:data.music,sfx:data.sfx,rewardMs:Number(data.reward_ms)||0,stickers:data.stickers||[],
+        bestStreak:data.best_streak||0,bestStreakAt:data.best_streak_at||null,testN:data.test_n??DEFAULTS.testN,testSec:data.test_sec??DEFAULTS.testSec};
       lsSet('th-settings',s);return s;
     }catch(e){console.warn(e);return cache||{...DEFAULTS}}
   },
   saveSettings(s){lsSet('th-settings',s);this.pendingS={...s};clearTimeout(this.st);this.st=setTimeout(()=>this.flushSettings(),1500)},
   async flushSettings(){
     clearTimeout(this.st);this.st=null;const s=this.pendingS;if(!s)return;
-    try{const {error}=await sb.from('settings').upsert({user_id:uid,tables:s.tables,reward_min:s.rewardMin,music:s.music,sfx:s.sfx,reward_ms:Math.round(s.rewardMs),stickers:s.stickers,updated_at:nowIso()});
+    try{const {error}=await safeUpsert('settings',[{user_id:uid,tables:s.tables,reward_min:s.rewardMin,music:s.music,sfx:s.sfx,reward_ms:Math.round(s.rewardMs),stickers:s.stickers,
+        best_streak:s.bestStreak||0,best_streak_at:s.bestStreakAt||null,test_n:s.testN,test_sec:s.testSec,updated_at:nowIso()}]);
       if(error)throw error;if(this.pendingS===s)this.pendingS=null}catch(e){console.warn('instellingen niet verstuurd',e)}
   },
   saveOb(){lsSet('th-outbox',this.ob)},
   saveSession(s){this.ob.sessions[s.id]={...s};this.saveOb();this.flush()},
   addAnswer(a){this.ob.answers.push(a);this.saveOb();this.flush()},
-  pending(){return this.ob.answers.length},
+  saveTest(t){this.ob.tests[t.id]={...t};this.saveOb();this.flush()},
+  addTestAnswer(a){this.ob.testAnswers.push(a);this.saveOb();this.flush()},
+  pending(){return this.ob.answers.length+this.ob.testAnswers.length},
+  async sendMap(table,map){
+    const rows=Object.values(map);if(!rows.length)return;
+    const {error}=await safeUpsert(table,rows.map(r=>({...r,user_id:uid})));if(error)throw error;
+    rows.forEach(r=>{if(JSON.stringify(map[r.id])===JSON.stringify(r))delete map[r.id]});
+  },
+  async sendList(table,list){
+    const rows=list.slice(0,500);if(!rows.length)return;
+    const {error}=await safeUpsert(table,rows.map(r=>({...r,user_id:uid})));if(error)throw error;
+    list.splice(0,rows.length);
+  },
   async flush(){
     if(this.flushing||!uid)return;this.flushing=true;let failed=false;
     try{
-      const ss=Object.values(this.ob.sessions);
-      if(ss.length){const {error}=await sb.from('sessions').upsert(ss.map(s=>({...s,user_id:uid})));if(error)throw error;
-        ss.forEach(s=>{if(JSON.stringify(this.ob.sessions[s.id])===JSON.stringify(s))delete this.ob.sessions[s.id]})}
-      const as=this.ob.answers.slice(0,500);
-      if(as.length){const {error}=await sb.from('answers').upsert(as.map(a=>({...a,user_id:uid})));if(error)throw error;this.ob.answers.splice(0,as.length)}
+      try{await this.sendMap('sessions',this.ob.sessions);await this.sendList('answers',this.ob.answers)}
+      catch(e){failed=true;console.warn('oefenantwoorden nog niet verstuurd (offline?)',e)}
       this.saveOb();
-    }catch(e){failed=true;console.warn('nog niet verstuurd (offline?)',e)}
-    finally{this.flushing=false}
-    const left=this.ob.answers.length||Object.keys(this.ob.sessions).length;
+      try{await this.sendMap('tests',this.ob.tests);await this.sendList('test_answers',this.ob.testAnswers);missingTables=false}
+      catch(e){failed=true;if(/test/.test(e.message||''))missingTables=true;console.warn('toetsen nog niet verstuurd',e)}
+      this.saveOb();
+    }finally{this.flushing=false}
+    const left=this.ob.answers.length+this.ob.testAnswers.length+Object.keys(this.ob.sessions).length+Object.keys(this.ob.tests).length;
     if(left&&!this.retryT)this.retryT=setTimeout(()=>{this.retryT=null;this.flush()},failed?15000:300);
   },
   async loadFacts(){
     await this.flush();
     try{const {data,error}=await sb.from('fact_stats').select('*');if(error)throw error;
-      const f={};data.forEach(r=>f[r.a+'x'+r.tafel]={tries:Number(r.tries),correct:Number(r.correct_count),ms:Number(r.total_ms),wrongs:r.wrongs||[],last:Date.parse(r.last_at)});
+      const f={};data.forEach(r=>f[r.a+'x'+r.tafel]={tries:Number(r.tries),correct:Number(r.correct_count),ms:Number(r.total_ms),wrongs:r.wrongs||[],last:Date.parse(r.last_at),
+        timedAll:Number(r.timed_all||0),timedOk:Number(r.timed_correct||0),fsum:Number(r.first_ms_sum||0),quick:Number(r.quick_count||0)});
       lsSet('th-facts',f);return f}
     catch(e){console.warn(e);return lsGet('th-facts',{})}
   },
-  async loadSessions(){
-    await this.flush();let all=[],from=0;
-    for(;;){const {data,error}=await sb.from('sessions').select('*').order('started_at').range(from,from+999);if(error)throw error;all=all.concat(data);if(data.length<1000)break;from+=1000}
-    return all;
+  async loadSessions(){await this.flush();return fetchAll('sessions','started_at')},
+  async loadTests(){
+    await this.flush();
+    try{const [tests,answers]=await Promise.all([fetchAll('tests','started_at'),fetchAll('test_answers','created_at')]);missingTables=false;return {tests,answers}}
+    catch(e){console.warn(e);missingTables=true;return {tests:[],answers:[]}}
   },
   async wipe(){
-    this.ob={sessions:{},answers:[]};this.saveOb();
-    let r=await sb.from('answers').delete().eq('user_id',uid);if(r.error)throw r.error;
+    this.ob={sessions:{},answers:[],tests:{},testAnswers:[]};this.saveOb();
+    let r=await sb.from('test_answers').delete().eq('user_id',uid);if(r.error)console.warn(r.error);
+    r=await sb.from('tests').delete().eq('user_id',uid);if(r.error)console.warn(r.error);
+    r=await sb.from('answers').delete().eq('user_id',uid);if(r.error)throw r.error;
     r=await sb.from('sessions').delete().eq('user_id',uid);if(r.error)throw r.error;
     lsSet('th-facts',{});
   },
-  async addBulk(ss,as){
-    let r=await sb.from('sessions').upsert(ss.map(s=>({...s,user_id:uid})));if(r.error)throw r.error;
-    for(let i=0;i<as.length;i+=500){r=await sb.from('answers').upsert(as.slice(i,i+500).map(a=>({...a,user_id:uid})));if(r.error)throw r.error}
+  async addBulk(ss,as,ts,tas){
+    let r=await safeUpsert('sessions',ss.map(s=>({...s,user_id:uid})));if(r.error)throw r.error;
+    for(let i=0;i<as.length;i+=500){r=await safeUpsert('answers',as.slice(i,i+500).map(a=>({...a,user_id:uid})));if(r.error)throw r.error}
+    if(ts&&ts.length){
+      r=await safeUpsert('tests',ts.map(t=>({...t,user_id:uid})));if(r.error)throw r.error;
+      for(let i=0;i<tas.length;i+=500){r=await safeUpsert('test_answers',tas.slice(i,i+500).map(a=>({...a,user_id:uid})));if(r.error)throw r.error}
+    }
   },
-  account(){return `Online opslag in Supabase. Ingelogd als <b>${userEmail}</b>.`+(this.pending()?` <span class="muted">(${this.pending()} antwoorden wachten op internet)</span>`:'')}
+  account(){return `Online opslag in Supabase. Ingelogd als <b>${userEmail}</b>.`+(this.pending()?` <span class="muted">(${this.pending()} antwoorden wachten op internet)</span>`:'')
+    +((missingCols.size||missingTables)?'<div class="note" style="margin-top:8px">De database is nog niet helemaal bijgewerkt. Voer het SQL-script <b>supabase-update-toets.sql</b> uit in Supabase (SQL Editor). Tot die tijd wordt niet alles online bewaard.</div>':'')}
 };
 
 let store=LocalStore,settings={...DEFAULTS},facts={};
@@ -462,6 +584,7 @@ async function afterLogin(){
   settings=await store.loadSettings();
   goHome();
   store.loadFacts().then(f=>facts=f).catch(()=>{});
+  refreshLastTest();
 }
 $('#loginForm').addEventListener('submit',async e=>{
   e.preventDefault();$('#lgMsg').textContent='';$('#lgBtn').disabled=true;
@@ -499,7 +622,9 @@ function duck(){if(!musicGain)return;const t=ac.currentTime;musicGain.gain.cance
 function sfxGood(){if(!settings.sfx||!audio())return;duck();const t=ac.currentTime;[72,76,79,84].forEach((m,i)=>tone(mf(m),t+i*0.08,0.35,'square',0.12));tone(mf(96),t+0.34,0.3,'sine',0.08)}
 function sfxBad(){if(!settings.sfx||!audio())return;duck();const t=ac.currentTime;tone(mf(55),t,0.28,'sawtooth',0.12);tone(mf(50),t+0.28,0.5,'sawtooth',0.12)}
 function sfxFanfare(){if(!audio())return;duck();const t=ac.currentTime;[60,64,67,72,67,72,76,79].forEach((m,i)=>tone(mf(m+12),t+i*0.12,i===7?0.8:0.2,'square',0.1))}
-function previewSounds(){audio();const s=settings.sfx;settings.sfx=true;sfxGood();setTimeout(sfxBad,1200);setTimeout(()=>{sfxFanfare();settings.sfx=s},2600)}
+function sfxRecord(){if(!audio())return;duck();const t=ac.currentTime;[67,72,76,79,84,88].forEach((m,i)=>tone(mf(m),t+i*0.07,i===5?0.7:0.18,'triangle',0.14));[84,88,91].forEach(m=>tone(mf(m),t+0.5,0.6,'sine',0.06))}
+function sfxSlow(){if(!settings.sfx||!audio())return;duck();const t=ac.currentTime;tone(mf(67),t,0.22,'triangle',0.12);tone(mf(64),t+0.2,0.35,'triangle',0.12)}
+function previewSounds(){audio();const s=settings.sfx;settings.sfx=true;sfxGood();setTimeout(sfxBad,1200);setTimeout(sfxFanfare,2600);setTimeout(()=>{sfxRecord();settings.sfx=s},4200)}
 
 /* ---------- home & album ---------- */
 function tablesText(){const t=[...settings.tables].sort((a,b)=>a-b);if(!t.length)return 'Nog geen tafels gekozen';return 'Tafel van '+(t.length>1?t.slice(0,-1).join(', ')+' en '+t[t.length-1]:t[0])}
@@ -510,6 +635,7 @@ function renderHome(){
   $('#homeBar').style.width=rewardPct()+'%';
   const left=Math.max(0,settings.rewardMin*60000-settings.rewardMs);
   $('#homeBarTxt').textContent='Nog ongeveer '+Math.max(1,Math.ceil(left/60000))+' min oefenen';
+  const hr=$('#homeRecord');hr.style.display=settings.bestStreak>=2?'':'none';hr.textContent=`🏆 Jouw record: ${settings.bestStreak} goed op een rij`;
   const last=settings.stickers[settings.stickers.length-1];
   if(last!==undefined&&STICKERS[last])capy($('#homeCapy'),STICKERS[last][0],STICKERS[last][2]);
 }
@@ -521,8 +647,8 @@ function openAlbum(){
 }
 
 /* ---------- oefenen ---------- */
-let cur=null,input='',qStart=0,lastAct=0,sess=null,busy=false,streak=0,stars=0;
-let retry=[],stage={},qCount=0,lastKey=null,pendingReward=false;
+let firstKey=null,cur=null,input='',qStart=0,lastAct=0,sess=null,busy=false,streak=0,stars=0;
+let retry=[],stage={},qCount=0,lastKey=null,pendingReward=false,startBest=0,recordBroken=false;
 function allKeys(){const k=[];settings.tables.forEach(t=>{for(let n=1;n<=10;n++)k.push(n+'x'+t)});return k}
 function pick(){
   qCount++;
@@ -533,6 +659,8 @@ function pick(){
     const f=facts[k],acc=f?(f.correct+1)/(f.tries+2):0.5;
     let x=1+(1-acc)*4;                       // vaker fout = vaker gevraagd
     if(f&&f.tries&&f.ms/f.tries>6000)x+=0.8; // traag = nog niet geautomatiseerd
+    if(f&&f.timedOk&&f.fsum/f.timedOk>3000)x+=0.8; // denkt lang na voor het eerste cijfer
+    const lt=lastTest[k];if(lt&&lt!=='vlot')x+=1.5; // laatste toets niet vlot
     if(retry.some(r=>r.key===k))x*=0.2;      // staat al ingepland
     return x});
   let r=Math.random()*w.reduce((a,b)=>a+b,0);
@@ -547,23 +675,29 @@ function buildPad(){
 }
 async function startPlay(){
   audio();
-  if(store.online){settings=await store.loadSettings();store.loadFacts().then(f=>facts=f).catch(()=>{})}
+  if(store.online){settings=await store.loadSettings();store.loadFacts().then(f=>facts=f).catch(()=>{});refreshLastTest()}
   if(!settings.tables.length){modal(`<div class="em">🙈</div><h2>Nog geen tafels</h2><p>Vraag papa of mama om tafels te kiezen.</p><button class="big-btn" style="width:100%" onclick="goHome()">Oké</button>`);return}
-  sess={id:uuid(),started_at:nowIso(),ended_at:nowIso(),active_ms:0,correct:0,wrong:0,device:DEVICE};
+  sess={id:uuid(),started_at:nowIso(),ended_at:nowIso(),active_ms:0,correct:0,wrong:0,best_streak:0,device:DEVICE};
+  startBest=settings.bestStreak||0;recordBroken=false;
   retry=[];stage={};qCount=0;lastKey=null;streak=0;stars=0;lastAct=Date.now();
-  $('#stars').textContent='0';$('#playBar').style.width=rewardPct()+'%';
+  $('#stars').textContent='0';$('#playBar').style.width=rewardPct()+'%';$('#streakRow').className='streakrow';updStreak();
   show('play');startMusic();next();
 }
 function next(){
   busy=false;cur=pick();lastKey=cur;const [n,t]=cur.split('x');
   $('#q').textContent=n+' × '+t;$('#qcard').className='qcard';$('#fb').textContent='';$('#playCapy').className='capy playcapy';
-  input='';upd();qStart=Date.now();
+  input='';firstKey=null;upd();qStart=Date.now();
 }
 function upd(){$('#ans').innerHTML=input||'&nbsp;'}
 function press(k){
   if(busy||!$('#play').classList.contains('active'))return;
-  if(k==='del')input=input.slice(0,-1);else if(k==='ok'){check();return}else if(input.length<3)input+=k;
+  if(k==='del')input=input.slice(0,-1);else if(k==='ok'){check();return}else if(input.length<3){if(!input&&firstKey===null)firstKey=Date.now()-qStart;input+=k}
   upd();
+}
+function updStreak(){
+  const best=settings.bestStreak||0,r=$('#streakRow');
+  if(recordBroken&&startBest>=3)r.innerHTML=`🏆 Nieuw record: <b>${best}</b> op een rij!`;
+  else r.innerHTML=`🔥 <b>${streak}</b> op een rij`+(best>=2?` &nbsp;·&nbsp; 🏆 record <b>${best}</b>`:'');
 }
 const PRAISE=['Goed zo!','Super!','Knap hoor!','Yes!','Top!','Wauw!','Helemaal goed!'];
 function check(){
@@ -574,41 +708,49 @@ function check(){
   sess.active_ms+=act;sess.ended_at=nowIso();ok?sess.correct++:sess.wrong++;
   settings.rewardMs+=act;
   // lokaal bijhouden voor de somkeuze
-  const f=facts[cur]||(facts[cur]={tries:0,correct:0,ms:0,wrongs:[],last:0});
+  const first=firstKey===null?null:Math.min(firstKey,30000),quick=ok&&first!==null&&first<=3000;
+  const f=facts[cur]||(facts[cur]={tries:0,correct:0,ms:0,wrongs:[],last:0,timedAll:0,timedOk:0,fsum:0,quick:0});
   f.tries++;f.ms+=dt;f.last=now;
+  if(first!==null){f.timedAll=(f.timedAll||0)+1;if(ok){f.timedOk=(f.timedOk||0)+1;f.fsum=(f.fsum||0)+first;if(quick)f.quick=(f.quick||0)+1}}
   if(ok){
-    f.correct++;streak++;stars++;
+    f.correct++;streak++;stars++;sess.best_streak=Math.max(sess.best_streak,streak);
+    let newRec=false;
+    if(streak>(settings.bestStreak||0)){settings.bestStreak=streak;settings.bestStreakAt=nowIso();if(!recordBroken){recordBroken=true;newRec=startBest>=3}}
     if(stage[cur]===1){stage[cur]=2;schedule(cur,6+rnd(4))}else delete stage[cur]; // na fout: nog één controle later
     $('#qcard').className='qcard good';$('#playCapy').className='capy playcapy hop';
-    $('#fb').textContent=streak%5===0?`🔥 ${streak} op een rij!`:PRAISE[rnd(PRAISE.length)];
-    $('#stars').textContent=stars;sfxGood();
-    if(streak%5===0)confetti(['⭐','✨','🌟','🍊'],14);
+    const best=settings.bestStreak;
+    $('#fb').textContent=newRec?'🏆 NIEUW RECORD!':streak%5===0?`🔥 ${streak} op een rij!`:(!recordBroken&&best>=3&&best-streak===1)?'Nog 1 voor je record! 😮':(!recordBroken&&best>=3&&best-streak===0)?'Evenveel als je record!':(quick&&Math.random()<.45)?'⚡ Bliksemsnel!':PRAISE[rnd(PRAISE.length)];
+    $('#stars').textContent=stars;
+    if(newRec){sfxRecord();confetti(['🏆','🔥','⭐','🍊'],26);$('#streakRow').className='streakrow gold'}
+    else{sfxGood();if(streak%5===0)confetti(['⭐','✨','🌟','🍊'],14)}
   }else{
     f.wrongs.unshift(given);f.wrongs=f.wrongs.slice(0,6);
-    streak=0;stage[cur]=1;schedule(cur,3+rnd(3)); // niet direct, maar na 3 tot 5 andere sommen
+    const had=streak;streak=0;stage[cur]=1;schedule(cur,3+rnd(3)); // niet direct, maar na 3 tot 5 andere sommen
     $('#qcard').className='qcard bad';$('#playCapy').className='capy playcapy sad';
-    $('#fb').innerHTML=`Het is <span style="color:var(--good)">${n} × ${t} = ${ans}</span>`;
+    $('#fb').innerHTML=`Het is <span style="color:var(--good)">${n} × ${t} = ${ans}</span>`+(had>=5?`<div style="font-size:18px;color:var(--soft)">Knap: je had er ${had} op een rij!</div>`:'');
     sfxBad();
   }
+  updStreak();
   store.saveSession(sess);
-  store.addAnswer({id:uuid(),session_id:sess.id,a:n,tafel:t,given,correct:ok,ms:dt,created_at:nowIso()});
+  store.addAnswer({id:uuid(),session_id:sess.id,a:n,tafel:t,given,correct:ok,ms:dt,first_ms:first,created_at:nowIso()});
   const target=settings.rewardMin*60000;
   if(settings.rewardMs>=target){settings.rewardMs-=target;pendingReward=true}
   store.saveSettings(settings);
   $('#playBar').style.width=rewardPct()+'%';
   setTimeout(()=>{if(!$('#play').classList.contains('active'))return;if(pendingReward){pendingReward=false;giveSticker()}else next()},ok?950:2300);
 }
-function giveSticker(){
+function giveSticker(fromTest){
   const own=new Set(settings.stickers);
   let free=STICKERS.map((_,i)=>i).filter(i=>!own.has(i));if(!free.length)free=STICKERS.map((_,i)=>i);
   const i=free[rnd(free.length)];settings.stickers=[...settings.stickers,i];store.saveSettings(settings);store.flushSettings();
   sfxFanfare();confetti(['🎉','⭐','🎈','💖','🍊'],30);
-  modal(`${capyHtml(i)}<h2>Nieuwe capibara!</h2><p>Je hebt de <b>${STICKERS[i][1]}</b> verdiend omdat je zo goed oefent.</p><button class="big-btn" style="width:100%" onclick="closeModal();next()">Verder oefenen</button><button class="sec-btn" style="width:100%;margin-top:10px" onclick="closeModal();stopPlay()">Stoppen</button>`);
+  modal(`${capyHtml(i)}<h2>Nieuwe capibara!</h2><p>Je hebt de <b>${STICKERS[i][1]}</b> verdiend omdat je zo goed ${fromTest?'je best doet':'oefent'}.</p>${fromTest?'<button class="big-btn" style="width:100%" onclick="goHome()">Klaar</button>':'<button class="big-btn" style="width:100%" onclick="closeModal();next()">Verder oefenen</button><button class="sec-btn" style="width:100%;margin-top:10px" onclick="closeModal();stopPlay()">Stoppen</button>'}`);
 }
 function stopPlay(){
   stopMusic();store.flushSettings();
-  const c=sess?sess.correct:0;
-  modal(`${capyHtml(settings.stickers.length?settings.stickers[settings.stickers.length-1]:0)}<h2>${c?'Goed gedaan!':'Tot zo!'}</h2><p>${c?`Je hebt <b>${c}</b> ${c===1?'som':'sommen'} goed gedaan. ⭐`:'Kom je straks weer oefenen?'}</p><button class="big-btn" style="width:100%" onclick="goHome()">Klaar</button>`);
+  const c=sess?sess.correct:0,rec=recordBroken&&startBest>=3;
+  if(rec){sfxRecord();confetti(['🏆','🔥','⭐'],20)}
+  modal(`${rec?'<div class="em">🏆</div>':capyHtml(settings.stickers.length?settings.stickers[settings.stickers.length-1]:0)}<h2>${rec?'Nieuw record!':c?'Goed gedaan!':'Tot zo!'}</h2><p>${rec?`<b>${settings.bestStreak}</b> goed op een rij! Dat heb je nog nooit gedaan. 🔥<br>`:''}${c?`Je hebt <b>${c}</b> ${c===1?'som':'sommen'} goed gedaan. ⭐`:'Kom je straks weer oefenen?'}</p><button class="big-btn" style="width:100%" onclick="goHome()">Klaar</button>`);
   sess=null;
 }
 function modal(h){$('#modal').innerHTML=h;$('#ov').classList.add('show')}
@@ -617,29 +759,127 @@ function confetti(set,n){for(let i=0;i<n;i++){const s=document.createElement('di
   s.style.left=rnd(100)+'vw';s.style.animationDuration=(1.6+Math.random()*1.6)+'s';s.style.animationDelay=(Math.random()*.4)+'s';
   document.body.appendChild(s);setTimeout(()=>s.remove(),3800)}}
 document.addEventListener('keydown',e=>{
-  if(!$('#play').classList.contains('active')||$('#ov').classList.contains('show'))return;
+  if($('#ov').classList.contains('show'))return;
+  if($('#test').classList.contains('active')&&T&&T.mode==='zelf'){
+    if(T.known===null){if(e.key===' '||e.key==='Enter'){e.preventDefault();know();return}if(/^[0-9]$/.test(e.key))know();else return}
+    if(/^[0-9]$/.test(e.key))tpress(e.key);else if(e.key==='Backspace')tpress('del');else if(e.key==='Enter')tpress('ok');
+    return;
+  }
+  if(!$('#play').classList.contains('active'))return;
   if(/^[0-9]$/.test(e.key))press(e.key);else if(e.key==='Backspace')press('del');else if(e.key==='Enter')press('ok');
 });
 document.addEventListener('visibilitychange',()=>{if(document.hidden){stopMusic();store.flushSettings()}else if($('#play').classList.contains('active'))startMusic()});
 
+/* ---------- toetsen: Bliksemronde (zelf) en Overhoren (ouder) ---------- */
+let T=null,tTimer=null,lastTest={};
+function computeLastTest(r){const m={};[...r.answers].sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)).forEach(a=>m[a.a+'x'+a.tafel]=a.result);return m}
+function refreshLastTest(){store.loadTests().then(r=>lastTest=computeLastTest(r)).catch(()=>{})}
+function openTestMenu(){$('#tmSec').textContent=settings.testSec||3;show('testMenu')}
+function shuffle(a){for(let i=a.length-1;i>0;i--){const j=rnd(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
+function buildTestPad(){
+  const ks=['1','2','3','4','5','6','7','8','9','del','0','ok'];
+  $('#tpad').innerHTML=ks.map(k=>`<button class="${k==='ok'?'ok':k==='del'?'del':''}" data-k="${k}">${k==='del'?'⌫':k==='ok'?'✓':k}</button>`).join('');
+  $('#tpad').onclick=e=>{const b=e.target.closest('button');if(b)tpress(b.dataset.k)};
+  $('#knowBtn').addEventListener('pointerdown',e=>{e.preventDefault();know()});
+}
+async function startTest(mode){
+  audio();stopMusic();closeModal();
+  if(store.online)settings=await store.loadSettings();
+  if(!settings.tables.length){modal(`<div class="em">🙈</div><h2>Nog geen tafels</h2><p>Vraag papa of mama om tafels te kiezen.</p><button class="big-btn" style="width:100%" onclick="goHome()">Oké</button>`);return}
+  const keys=shuffle(allKeys()),n=settings.testN?Math.min(settings.testN,keys.length):keys.length;
+  T={mode,keys:keys.slice(0,n),i:-1,sec:settings.testSec||3,res:[],reward:0,
+     rec:{id:uuid(),started_at:nowIso(),ended_at:nowIso(),mode,planned:n,total:0,vlot:0,laat:0,fout:0,seconds:settings.testSec||3,device:DEVICE}};
+  lastAct=Date.now();
+  $('#tZelf').style.display=mode==='zelf'?'':'none';$('#tJudge').style.display=mode==='overhoor'?'':'none';
+  show('test');nextTest();
+}
+function nextTest(){
+  clearTimeout(tTimer);T.i++;
+  if(T.i>=T.keys.length){finishTest();return}
+  const [n,t]=T.keys[T.i].split('x').map(Number);
+  T.busy=false;T.known=null;T.first=null;T.input='';
+  $('#tq').textContent=n+' × '+t;$('#tcard').className='qcard';$('#tfb').textContent='';$('#tpeek').textContent='';
+  $('#tProg').textContent=(T.i+1)+' / '+T.keys.length;$('#tVlot').textContent=T.rec.vlot;
+  $('#tans').style.display='none';$('#tans').innerHTML='&nbsp;';
+  $('#knowBtn').style.display='';$('#tpad').style.display='none';$('#skipBtn').style.visibility='visible';
+  const tm=$('#tTimer'),bar=tm.firstElementChild;tm.className='timer';
+  bar.style.transition='none';bar.style.width='100%';void bar.offsetWidth;
+  bar.style.transition=`width ${T.sec}s linear`;bar.style.width='0%';
+  T.start=performance.now();
+  tTimer=setTimeout(()=>{tm.className='timer late';if(T.mode==='overhoor')$('#tpeek').textContent='Antwoord: '+n*t},T.sec*1000);
+}
+function know(){
+  if(!T||T.mode!=='zelf'||T.known!==null||T.busy)return;
+  T.known=performance.now()-T.start;T.knownAt=performance.now();
+  const bar=$('#tTimer').firstElementChild,w=getComputedStyle(bar).width;bar.style.transition='none';bar.style.width=w;
+  if(T.known>T.sec*1000)$('#tTimer').className='timer late';
+  clearTimeout(tTimer);
+  $('#knowBtn').style.display='none';$('#tpad').style.display='';$('#tans').style.display='';$('#skipBtn').style.visibility='hidden';
+}
+function tpress(k){
+  if(!T||T.busy||T.known===null)return;
+  if(k==='del')T.input=T.input.slice(0,-1);
+  else if(k==='ok'){if(T.input)tAnswer();return}
+  else if(T.input.length<3){if(!T.input&&T.first===null)T.first=performance.now()-T.knownAt;T.input+=k}
+  $('#tans').innerHTML=T.input||'&nbsp;';
+}
+function tAnswer(){
+  const [n,t]=T.keys[T.i].split('x').map(Number),given=+T.input,ok=given===n*t;
+  const recall=Math.round(T.known),first=T.first===null?null:Math.round(T.first);
+  // vlot = goed + binnen de tijd op de knop + daarna binnen 2 seconden begonnen met intikken
+  const res=!ok?'fout':(recall<=T.sec*1000&&first!==null&&first<=2000)?'vlot':'laat';
+  recordTest(n,t,given,res,recall,first);
+}
+function skipTest(){if(!T||T.busy||T.known!==null)return;const [n,t]=T.keys[T.i].split('x').map(Number);recordTest(n,t,null,'fout',null,null)}
+function judge(res){if(!T||T.busy||T.mode!=='overhoor')return;const [n,t]=T.keys[T.i].split('x').map(Number);recordTest(n,t,null,res,Math.round(performance.now()-T.start),null)}
+function recordTest(n,t,given,res,recall,first){
+  T.busy=true;clearTimeout(tTimer);
+  const now=Date.now(),act=Math.min(now-lastAct,30000);lastAct=now;settings.rewardMs+=act;
+  T.rec.total++;T.rec[res]++;T.rec.ended_at=nowIso();
+  T.res.push({key:n+'x'+t,res});lastTest[n+'x'+t]=res;
+  store.saveTest(T.rec);
+  store.addTestAnswer({id:uuid(),test_id:T.rec.id,a:n,tafel:t,mode:T.mode,given,result:res,recall_ms:recall,first_ms:first,created_at:nowIso()});
+  const target=settings.rewardMin*60000;if(settings.rewardMs>=target){settings.rewardMs-=target;T.reward++}
+  store.saveSettings(settings);
+  const card=$('#tcard'),fb=$('#tfb');
+  if(res==='vlot'){card.className='qcard good';fb.textContent='⚡ Bliksemsnel!';sfxGood()}
+  else if(res==='laat'){card.className='qcard good';fb.textContent='🐢 Goed, maar nog niet snel genoeg';sfxSlow()}
+  else{card.className='qcard bad';fb.innerHTML=`Het is <span style="color:var(--good)">${n} × ${t} = ${n*t}</span>`;sfxBad()}
+  $('#tVlot').textContent=T.rec.vlot;
+  setTimeout(()=>{if(T&&$('#test').classList.contains('active'))nextTest()},res==='fout'?2000:T.mode==='overhoor'?700:1100);
+}
+function stopTest(){if(!T)return;clearTimeout(tTimer);finishTest()}
+function finishTest(){
+  clearTimeout(tTimer);const r=T.rec,rew=T.reward,res=T.res;T=null;store.flushSettings();
+  if(!r.total){goHome();return}
+  const todo=res.filter(x=>x.res!=='vlot').map(x=>{const [n,t]=x.key.split('x').map(Number);return `<span>${x.res==='fout'?'❌':'🐢'} ${n} × ${t} = ${n*t}</span>`});
+  const pct=r.vlot/r.total,emo=pct>=.9?'🏆':pct>=.7?'🌟':'💪';
+  if(pct>=.9){sfxRecord();confetti(['⚡','🏆','⭐','🍊'],26)}else sfxFanfare();
+  modal(`<div class="em">${emo}</div><h2>${pct>=.9?'Toetsklaar!':pct>=.7?'Bijna toetsklaar!':'Goed gedaan!'}</h2>
+    <p>⚡ <b>${r.vlot}</b> van de ${r.total} bliksemsnel${r.laat?`<br>🐢 ${r.laat} goed, maar nog te langzaam`:''}${r.fout?`<br>❌ ${r.fout} nog niet goed`:''}</p>
+    ${todo.length?`<div style="font-weight:700">Deze gaan we extra oefenen:</div><div class="chips">${todo.slice(0,15).join('')}</div>`:''}
+    <button class="big-btn" style="width:100%" onclick="${rew?'giveSticker(true)':'goHome()'}">${rew?'Pak je capibara! 🎁':'Klaar'}</button>`);
+}
+
 /* ---------- ouderslot: twee getallen van twee cijfers ---------- */
-let lockAns=0;
+let lockAns=0,lockTarget='parent';
 function hardNum(lo,hi){let x;do{x=lo+rnd(hi-lo+1)}while(x%10===0||x%11===0);return x}
-function openLock(){
+function openLock(target){
+  lockTarget=target||'parent';
   // zelfde tiental, eenheden samen 10 (bijv. 32 × 38) – uit het hoofd: 3×4=12 en 2×8=16 → 1216
   const t=2+rnd(8),u=1+rnd(9),a=t*10+u,b=t*10+(10-u);lockAns=a*b;
   $('#lockQ').textContent=a+' × '+b+' = ?';$('#lockIn').value='';$('#lockMsg').textContent='';
   show('lockScr');setTimeout(()=>$('#lockIn').focus(),50);
 }
 $('#lockIn').addEventListener('keydown',e=>{if(e.key==='Enter')checkLock()});
-function checkLock(){if(+$('#lockIn').value===lockAns)openParent();else{$('#lockMsg').textContent='Dat klopt niet. Hier is een nieuwe som.';const m=$('#lockMsg').textContent;openLock();$('#lockMsg').textContent=m}}
+function checkLock(){if(+$('#lockIn').value===lockAns){lockTarget==='quiz'?startTest('overhoor'):openParent()}else{const m='Dat klopt niet. Hier is een nieuwe som.';openLock(lockTarget);$('#lockMsg').textContent=m}}
 function openParent(){renderSettings();ptab('a');show('parent')}
 function ptab(w){$('#pa').style.display=w==='a'?'':'none';$('#ps').style.display=w==='s'?'':'none';$('#tabA').classList.toggle('on',w==='a');$('#tabS').classList.toggle('on',w==='s');if(w==='a')renderAnalysis();else renderSettings()}
 
 /* ---------- instellingen ---------- */
 function renderSettings(){
   $('#tgrid').innerHTML=[1,2,3,4,5,6,7,8,9,10].map(t=>`<button class="${settings.tables.includes(t)?'on':''}" onclick="toggleTable(${t})">${t}</button>`).join('');
-  $('#rewardSel').value=settings.rewardMin;$('#musicChk').checked=settings.music;$('#sfxChk').checked=settings.sfx;
+  $('#rewardSel').value=settings.rewardMin;$('#testNSel').value=settings.testN;$('#testSecSel').value=settings.testSec;$('#musicChk').checked=settings.music;$('#sfxChk').checked=settings.sfx;
   $('#acctInfo').innerHTML=store.account();
   $('#acctBtns').innerHTML=store.online?`<button class="btn" id="logoutBtn" onclick="logout()">Uitloggen op dit apparaat</button>`:'';
 }
@@ -656,33 +896,46 @@ function wipe(){confirmTwice('wipeBtn','Analyse wissen',async b=>{
   try{await store.wipe();facts={};b.textContent='Gewist ✓'}catch(e){b.textContent='Mislukt: '+e.message}
   b.disabled=false;setTimeout(()=>b.textContent='Analyse wissen',3000);
 })}
-function resetStickers(){confirmTwice('stkBtn','Stickers resetten',async b=>{
-  settings.stickers=[];settings.rewardMs=0;store.saveSettings(settings);await store.flushSettings();
-  b.textContent='Gereset ✓';setTimeout(()=>b.textContent='Stickers resetten',3000);
+function resetStickers(){confirmTwice('stkBtn','Stickers en record resetten',async b=>{
+  settings.stickers=[];settings.rewardMs=0;settings.bestStreak=0;settings.bestStreakAt=null;store.saveSettings(settings);await store.flushSettings();
+  b.textContent='Gereset ✓';setTimeout(()=>b.textContent='Stickers en record resetten',3000);
 })}
 function logout(){confirmTwice('logoutBtn','Uitloggen op dit apparaat',async()=>{await store.logout();show('loginScr')})}
 async function loadDemo(){
   const b=$('#demoBtn');b.disabled=true;b.textContent='Bezig…';
   const hard={'7x4':.45,'8x4':.55,'6x3':.6,'9x3':.5,'7x3':.62,'8x5':.72,'6x4':.7,'9x4':.66};
-  const T=[2,3,4,5,10],now=Date.now(),ss=[],as=[];
+  const slow={'7x5':1,'9x5':1,'8x3':1,'6x5':1};
+  const T=[2,3,4,5,10],now=Date.now(),ss=[],as=[],ts=[],tas=[];
+  const pOk=(k,t,d)=>Math.min(.99,(hard[k]!==undefined?hard[k]:(t===2||t===10?.97:t===5?.92:.86))+(13-d)*.012);
+  const denk=(k,t,ok,d)=>ok?(t===2||t===10?900+rnd(1300):1300+rnd(1900))+(hard[k]!==undefined?1800:0)+(slow[k]?2200:0)-(13-d)*40:3200+rnd(4000);
   for(let d=13;d>=0;d--){
     if(Math.random()<0.3)continue;
     const nS=Math.random()<0.25?2:1;
     for(let s=0;s<nS;s++){
       const st=new Date(now-d*864e5);st.setHours(16+s*2,rnd(50),0,0);if(+st>now)st.setTime(now-3600e3);
       const S={id:uuid(),started_at:st.toISOString(),active_ms:0,correct:0,wrong:0,device:Math.random()<.6?'Android':'Laptop/pc'};
-      let t0=+st;const q=14+rnd(26);
+      let t0=+st,run=0;S.best_streak=0;const q=14+rnd(26);
       for(let i=0;i<q;i++){
-        const t=T[rnd(5)],n=1+rnd(10),k=n+'x'+t,ans=n*t;
-        let p=hard[k]!==undefined?hard[k]:(t===2||t===10?.97:t===5?.92:.86);p=Math.min(.99,p+(13-d)*.012);
-        const ok=Math.random()<p,ms=(ok?2200+rnd(3500):5000+rnd(5000))+(hard[k]!==undefined?2500:0);
-        t0+=ms+1200;ok?S.correct++:S.wrong++;S.active_ms+=ms+1200;
-        as.push({id:uuid(),session_id:S.id,a:n,tafel:t,given:ok?ans:ans+[t,-t,1,-1,t][rnd(5)],correct:ok,ms,created_at:new Date(t0).toISOString()});
+        const t=T[rnd(5)],n=1+rnd(10),k=n+'x'+t,ans=n*t,ok=Math.random()<pOk(k,t,d);
+        const first=Math.max(500,denk(k,t,ok,d)),ms=first+700+rnd(900);
+        t0+=ms+1200;ok?S.correct++:S.wrong++;S.active_ms+=ms+1200;run=ok?run+1:0;S.best_streak=Math.max(S.best_streak,run);
+        as.push({id:uuid(),session_id:S.id,a:n,tafel:t,given:ok?ans:ans+[t,-t,1,-1,t][rnd(5)],correct:ok,ms,first_ms:first,created_at:new Date(t0).toISOString()});
       }
       S.ended_at=new Date(t0).toISOString();ss.push(S);
     }
   }
-  try{await store.addBulk(ss,as);facts=await store.loadFacts();b.textContent='Toegevoegd ✓';setTimeout(()=>ptab('a'),600)}
+  [[12,'zelf'],[8,'zelf'],[5,'overhoor'],[1,'zelf']].forEach(([d,mode])=>{
+    const st=new Date(now-d*864e5);st.setHours(18,rnd(50),0,0);
+    const R={id:uuid(),started_at:st.toISOString(),mode,planned:20,total:0,vlot:0,laat:0,fout:0,seconds:3,device:'Android'};let t0=+st;
+    shuffle(T.flatMap(t=>[...Array(10)].map((_,i)=>(i+1)+'x'+t))).slice(0,20).forEach(k=>{
+      const [n,t]=k.split('x').map(Number),ok=Math.random()<pOk(k,t,d),dk=denk(k,t,ok,d);
+      const res=!ok?'fout':dk<=2600?'vlot':'laat';R.total++;R[res]++;t0+=4000;
+      tas.push({id:uuid(),test_id:R.id,a:n,tafel:t,mode,given:mode==='zelf'?(ok?n*t:n*t+t):null,result:res,recall_ms:Math.round(dk*.8),first_ms:mode==='zelf'?600+rnd(900):null,created_at:new Date(t0).toISOString()});
+    });
+    R.ended_at=new Date(t0).toISOString();ts.push(R);
+  });
+  ss.sort((a,b)=>a.started_at<b.started_at?-1:1);
+  try{await store.addBulk(ss,as,ts,tas);facts=await store.loadFacts();b.textContent='Toegevoegd ✓';setTimeout(()=>ptab('a'),600)}
   catch(e){b.textContent='Mislukt: '+e.message}
   b.disabled=false;setTimeout(()=>b.textContent='Vul met testdata (2 weken)',3000);
 }
@@ -690,56 +943,104 @@ async function loadDemo(){
 /* ---------- analyse ---------- */
 function fmt(ms){const m=Math.round(ms/60000);if(ms<60000)return Math.round(ms/1000)+' sec';if(m<60)return m+' min';return Math.floor(m/60)+' u '+(m%60)+' min'}
 function col(a){return a>=.9?'#3ecf7e':a>=.75?'#c8e66a':a>=.5?'#ffc55c':'#ff7a7a'}
+const RES={vlot:['⚡','#3ecf7e','vlot'],laat:['🐢','#ffc55c','goed maar te laat'],fout:['❌','#ff7a7a','fout']};
 function mostCommon(a){const c={};a.forEach(x=>c[x]=(c[x]||0)+1);return Object.entries(c).sort((x,y)=>y[1]-x[1]).map(x=>x[0])}
+const denkS=f=>f&&f.timedOk?f.fsum/f.timedOk/1000:null;          // gemiddelde denktijd (tot 1e cijfer) bij goede antwoorden
+const vlotP=f=>f&&f.timedAll?f.quick/f.timedAll:null;              // deel van de keren goed én binnen 3 s begonnen
+const dstr=(iso,o)=>new Date(iso).toLocaleDateString('nl-NL',o||{weekday:'short',day:'numeric',month:'short'});
+let heatMode='goed',A=null;
 async function renderAnalysis(){
   $('#paLoading').style.display='';$('#paLoading').textContent='Gegevens ophalen…';$('#paBody').style.display='none';
-  let F,S;
-  try{[F,S]=await Promise.all([store.loadFacts(),store.loadSessions()])}
+  if(store.online)settings=await store.loadSettings();
+  let F,S,TT;
+  try{[F,S,TT]=await Promise.all([store.loadFacts(),store.loadSessions(),store.loadTests()])}
   catch(e){$('#paLoading').textContent='Kon de gegevens niet ophalen: '+e.message;return}
-  facts=F;S=S.filter(s=>s.correct+s.wrong>0);
+  facts=F;lastTest=computeLastTest(TT);
+  const tests=[...TT.tests].filter(t=>t.total>0).sort((a,b)=>a.started_at<b.started_at?-1:1);
+  A={F,S:S.filter(s=>s.correct+s.wrong>0).sort((a,b)=>a.started_at<b.started_at?-1:1),tests,tans:TT.answers};
   $('#paLoading').style.display='none';$('#paBody').style.display='';
+  drawAnalysis();
+}
+function drawAnalysis(){
+  const {F,S,tests,tans}=A;
   const tot=S.reduce((a,s)=>a+s.active_ms,0),good=S.reduce((a,s)=>a+s.correct,0),all=S.reduce((a,s)=>a+s.correct+s.wrong,0);
   const days=new Set(S.map(s=>new Date(s.started_at).toDateString())).size;
-  const last=S.length?new Date(S[S.length-1].started_at):null;
+  const last=S.length?S[S.length-1].started_at:null;
+  const keys=allKeys(),vlotKeys=keys.filter(k=>{const f=F[k];return f&&f.timedAll>=2&&vlotP(f)>=.8}).length;
+  const lt=tests[tests.length-1];
   $('#kpis').innerHTML=[
     [fmt(tot),'totaal geoefend'],[S.length,`keer geoefend (${days} ${days===1?'dag':'dagen'})`],[S.length?fmt(tot/S.length):'–','gemiddeld per keer'],
-    [all?Math.round(good/all*100)+'%':'–',`goed (${all} sommen)`],[last?last.toLocaleDateString('nl-NL',{weekday:'short',day:'numeric',month:'short'}):'–','laatst geoefend']
+    [all?Math.round(good/all*100)+'%':'–',`goed (${all} sommen)`],
+    [keys.length?`⚡ ${vlotKeys}/${keys.length}`:'–','sommen al vlot (denktijd ≤ 3 s)'],
+    [lt?`${lt.vlot}/${lt.total}`:'–',lt?`vlot bij laatste toets (${dstr(lt.started_at,{day:'numeric',month:'short'})})`:'nog geen toets gedaan'],
+    [settings.bestStreak?`🏆 ${settings.bestStreak}`:'–','langste reeks goed'+(settings.bestStreakAt?' ('+dstr(settings.bestStreakAt,{day:'numeric',month:'short'})+')':'')],
+    [last?dstr(last):'–','laatst geoefend']
   ].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
   const dev={};S.forEach(s=>dev[s.device||'?']=(dev[s.device||'?']||0)+1);
   $('#devices').textContent=S.length?'Geoefend op: '+Object.entries(dev).map(([k,v])=>`${k} (${v}×)`).join(', '):'';
 
+  // oefentijd per dag
   const per=[];for(let d=13;d>=0;d--){const dt=new Date();dt.setHours(0,0,0,0);dt.setDate(dt.getDate()-d);per.push({dt,ms:0})}
   S.forEach(s=>{const k=new Date(s.started_at);k.setHours(0,0,0,0);const p=per.find(x=>+x.dt===+k);if(p)p.ms+=s.active_ms});
   const mx=Math.max(60000,...per.map(p=>p.ms));
   $('#days').innerHTML=per.map(p=>`<div class="d"><em>${p.ms?Math.max(1,Math.round(p.ms/60000)):''}</em><i style="height:${p.ms/mx*80}%"></i>${p.dt.toLocaleDateString('nl-NL',{weekday:'narrow'})}<br>${p.dt.getDate()}</div>`).join('');
 
+  // per tafel
   const rows=[];
-  for(let t=1;t<=10;t++){let tr=0,co=0,ms=0;for(let n=1;n<=10;n++){const f=F[n+'x'+t];if(f){tr+=f.tries;co+=f.correct;ms+=f.ms}}if(tr)rows.push({t,tr,co,ms})}
-  $('#perTable').innerHTML=rows.length?rows.sort((a,b)=>a.co/a.tr-b.co/b.tr).map(r=>{const a=r.co/r.tr;return `<div class="trow"><b>Tafel van ${r.t}</b><div class="tb"><i style="width:${a*100}%;background:${col(a)}"></i></div><span>${Math.round(a*100)}% goed</span><span class="muted">${(r.ms/r.tr/1000).toFixed(1)} sec/som</span></div>`}).join('')
-    +'<div class="muted" style="margin-top:6px">Van moeilijkst naar makkelijkst. Meer dan 5 seconden per som betekent meestal: nog uitrekenen in plaats van uit het hoofd weten.</div>'
+  for(let t=1;t<=10;t++){const r={t,tr:0,co:0,ta:0,tok:0,fs:0,q:0};for(let n=1;n<=10;n++){const f=F[n+'x'+t];if(f){r.tr+=f.tries;r.co+=f.correct;r.ta+=f.timedAll||0;r.tok+=f.timedOk||0;r.fs+=f.fsum||0;r.q+=f.quick||0}}if(r.tr)rows.push(r)}
+  $('#perTable').innerHTML=rows.length?rows.sort((a,b)=>a.co/a.tr-b.co/b.tr).map(r=>{const a=r.co/r.tr,v=r.ta?r.q/r.ta:null;
+    return `<div class="trow"><b>Tafel van ${r.t}</b><div class="tb"><i style="width:${a*100}%;background:${col(a)}"></i></div><span>${Math.round(a*100)}% goed</span><span>${v===null?'–':'⚡ '+Math.round(v*100)+'% vlot'}</span><span class="muted">${r.tok?(r.fs/r.tok/1000).toFixed(1)+' s denken':''}</span></div>`}).join('')
+    +'<div class="muted" style="margin-top:8px"><b>Denktijd</b> = tijd tot ze het eerste cijfer intikt; dat komt het dichtst bij "het antwoord opnoemen". <b>⚡ Vlot</b> = goed én binnen 3 seconden begonnen met intikken, zoals op de toets.</div>'
     :'<div class="muted">Nog geen gegevens. Laat haar eerst oefenen, of kies bij Instellingen "Vul met testdata".</div>';
 
-  const tl=[...new Set([...settings.tables,...rows.map(r=>r.t)])].sort((a,b)=>a-b);
+  drawHeat();
+
+  // lastige sommen
+  const hard=Object.entries(F).filter(([,f])=>f.tries>=2).map(([k,f])=>{const err=1-f.correct/f.tries,dk=denkS(f),l=lastTest[k];
+      return{k,f,err,dk,l,score:err*2+(dk!==null?Math.max(0,dk-3)/2:Math.max(0,f.ms/f.tries/1000-5)/4)+(l==='fout'?.6:l==='laat'?.4:0)}})
+    .filter(x=>x.score>0.25).sort((a,b)=>b.score-a.score).slice(0,12);
+  $('#hard').innerHTML=hard.length?`<table class="hard"><tr><th>Som</th><th>Goed</th><th>Denktijd</th><th>Zegt vaak</th><th>Toets</th><th>Wat valt op</th></tr>`+hard.map(x=>{const [n,t]=x.k.split('x').map(Number);
+    const note=x.err>=.3?'vaak fout':x.dk!==null&&x.dk>3?'goed, maar denkt te lang':x.l==='laat'?'op de toets te langzaam':x.l==='fout'?'op de toets fout':'soms fout';
+    return `<tr><td><b>${n} × ${t} = ${n*t}</b></td><td>${x.f.correct}/${x.f.tries}</td><td>${x.dk!==null?x.dk.toFixed(1)+' s':'–'}</td><td>${mostCommon(x.f.wrongs).slice(0,2).join(', ')||'–'}</td><td>${x.l?RES[x.l][0]:'–'}</td><td>${note}</td></tr>`}).join('')+'</table>'
+    :'<div class="muted">Geen opvallende probleemsommen (een som moet minstens 2 keer gevraagd zijn).</div>';
+
+  // toetsen
+  if(!tests.length){$('#testsBox').innerHTML='<div class="muted">Nog geen toetsen gedaan. Ze kan zelf een ⚡ Bliksemronde doen via "Toets" op het beginscherm, of jij overhoort haar (Instellingen → Nu overhoren).</div>'+(store.online&&missingTables?'<div class="note" style="margin-top:8px">De tabellen voor toetsen ontbreken nog in de database. Voer supabase-update-toets.sql uit.</div>':'');return}
+  const tl=tests.slice(-14);
+  $('#testsBox').innerHTML=`<div class="muted">Percentage ⚡ vlot per toets (⚡ = Bliksemronde, 👪 = overhoord)</div>
+    <div class="tbars">${tl.map(t=>{const p=t.vlot/t.total;return `<div class="d"><em>${Math.round(p*100)}%</em><i style="height:${p*75}%;background:${col(p)}"></i>${t.mode==='overhoor'?'👪':'⚡'}<br>${dstr(t.started_at,{day:'numeric',month:'numeric'})}</div>`}).join('')}</div>
+    <table class="hard"><tr><th>Datum</th><th>Soort</th><th>⚡ vlot</th><th>🐢 te laat</th><th>❌ fout</th><th>Score</th></tr>
+    ${[...tests].reverse().map(t=>`<tr><td>${dstr(t.started_at)}</td><td>${t.mode==='overhoor'?'👪 Overhoord':'⚡ Bliksemronde'}${t.total<t.planned?' <span class="muted">(gestopt)</span>':''}</td><td>${t.vlot}</td><td>${t.laat}</td><td>${t.fout}</td><td><b>${Math.round(t.vlot/t.total*100)}%</b></td></tr>`).join('')}</table>`;
+}
+function drawHeat(){
+  const {F,tans}=A;
+  const modes=[['goed','% goed bij oefenen'],['vlot','⚡ % vlot bij oefenen'],['toets','Laatste toets']];
+  $('#heatSeg').innerHTML=modes.map(([m,l])=>`<button class="${heatMode===m?'on':''}" onclick="heatMode='${m}';drawHeat()">${l}</button>`).join('');
+  $('#heatExpl').textContent='Rij = tafel, kolom = keer-getal (rij 7, kolom 8 is 8 × 7). '+(heatMode==='goed'?'Getal = % goed.':heatMode==='vlot'?'Getal = % van de keren goed én binnen 3 seconden begonnen met intikken.':'Uitslag van de laatste keer dat deze som in een toets zat.')+' Tik op een vakje voor details.';
+  $('#heatLegend').innerHTML=heatMode==='toets'
+    ?'<span><i style="background:#3ecf7e"></i>⚡ vlot</span><span><i style="background:#ffc55c"></i>🐢 goed maar te laat</span><span><i style="background:#ff7a7a"></i>❌ fout</span><span><i style="background:#eee"></i>nog niet getoetst</span>'
+    :'<span><i style="background:#3ecf7e"></i>≥ 90%</span><span><i style="background:#c8e66a"></i>75–90%</span><span><i style="background:#ffc55c"></i>50–75%</span><span><i style="background:#ff7a7a"></i>&lt; 50%</span><span><i style="background:#eee"></i>nog geen gegevens</span>';
+  const used=new Set();Object.keys(F).forEach(k=>used.add(+k.split('x')[1]));Object.keys(lastTest).forEach(k=>used.add(+k.split('x')[1]));
+  const tl=[...new Set([...settings.tables,...used])].sort((a,b)=>a-b);
   let h='<div class="h"></div>'+[1,2,3,4,5,6,7,8,9,10].map(n=>`<div class="h">${n}×</div>`).join('');
-  tl.forEach(t=>{h+=`<div class="h">${t}</div>`;for(let n=1;n<=10;n++){const f=F[n+'x'+t];
-    h+=f?`<div class="c" style="background:${col(f.correct/f.tries)}" data-k="${n}x${t}">${Math.round(f.correct/f.tries*100)}</div>`:`<div class="c" style="background:#eee;color:#aaa" data-k="${n}x${t}">·</div>`}});
+  tl.forEach(t=>{h+=`<div class="h">${t}</div>`;for(let n=1;n<=10;n++){const k=n+'x'+t,f=F[k];let v=null,txt='·',bg='#eee';
+    if(heatMode==='toets'){const r=lastTest[k];if(r){bg=RES[r][1];txt=RES[r][0]}}
+    else{v=heatMode==='goed'?(f?f.correct/f.tries:null):vlotP(f);if(v!==null){bg=col(v);txt=Math.round(v*100)}}
+    h+=`<div class="c" style="background:${bg};${txt==='·'?'color:#aaa':''}" data-k="${k}">${txt}</div>`}});
   const hm=$('#heat');hm.style.gridTemplateColumns='30px repeat(10,minmax(28px,1fr))';hm.innerHTML=h;$('#cellInfo').textContent='';
   hm.onclick=e=>{const c=e.target.closest('.c');if(!c)return;hm.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');
     const k=c.dataset.k,[n,t]=k.split('x').map(Number),f=F[k];
-    $('#cellInfo').innerHTML=f?`<b>${n} × ${t} = ${n*t}</b>: ${f.tries}× gevraagd, ${f.correct}× goed, gemiddeld ${(f.ms/f.tries/1000).toFixed(1)} sec.`+(f.wrongs.length?` Laatste foute antwoorden: ${f.wrongs.join(', ')}.`:''):`<b>${n} × ${t}</b> is nog niet gevraagd.`};
-
-  const hard=Object.entries(F).filter(([,f])=>f.tries>=2).map(([k,f])=>{const err=1-f.correct/f.tries,sec=f.ms/f.tries/1000;return{k,f,err,sec,score:err*2+Math.max(0,sec-4)/6}})
-    .filter(x=>x.score>0.25).sort((a,b)=>b.score-a.score).slice(0,10);
-  $('#hard').innerHTML=hard.length?`<table class="hard"><tr><th>Som</th><th>Goed</th><th>Tijd</th><th>Zegt vaak</th><th>Wat valt op</th></tr>`+hard.map(x=>{const [n,t]=x.k.split('x').map(Number);
-    const note=x.err>=.3?'vaak fout':x.sec>6?'goed, maar traag (rekent nog)':'soms fout';
-    return `<tr><td><b>${n} × ${t} = ${n*t}</b></td><td>${x.f.correct}/${x.f.tries}</td><td>${x.sec.toFixed(1)} s</td><td>${mostCommon(x.f.wrongs).slice(0,2).join(', ')||'–'}</td><td>${note}</td></tr>`}).join('')+'</table>'
-    :'<div class="muted">Geen opvallende probleemsommen (een som moet minstens 2 keer gevraagd zijn).</div>';
+    const hist=tans.filter(a=>a.a===n&&a.tafel===t).sort((a,b)=>a.created_at<b.created_at?-1:1).map(a=>RES[a.result][0]).join(' ');
+    let txt=`<b>${n} × ${t} = ${n*t}</b>: `;
+    txt+=f?`${f.tries}× geoefend, ${f.correct}× goed`+(denkS(f)!==null?`, gemiddelde denktijd ${denkS(f).toFixed(1)} s, ${Math.round(vlotP(f)*100)}% vlot`:`, gemiddeld ${(f.ms/f.tries/1000).toFixed(1)} s`)+'.'+(f.wrongs.length?` Laatste foute antwoorden: ${f.wrongs.join(', ')}.`:''):'nog niet geoefend.';
+    txt+=hist?` Toetsen (oud → nieuw): ${hist}`:' Nog niet getoetst.';
+    $('#cellInfo').innerHTML=txt};
 }
 
 /* ---------- installeerbaar maken (Android: "Toevoegen aan startscherm") ---------- */
 try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
 
-buildPad();boot();
+buildPad();buildTestPad();boot();
 </script>
 </body>
 </html>
