@@ -255,7 +255,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
 <!-- TOETS -->
 <section class="screen" id="test">
   <div class="wrap">
-    <div class="topbar"><button class="pill" onclick="stopTest()">✋ Stop</button><span class="pill" style="flex:1;text-align:center" id="tProg">1 / 20</span><span class="pill">⚡ <span id="tVlot">0</span></span></div>
+    <div class="topbar"><button class="pill" onclick="stopTest()">✋ Stop</button><span class="pill" style="flex:1;text-align:center" id="tProg">1 / 20</span><span class="pill" id="tClock">⏱ 0:00</span><span class="pill">⚡ <span id="tVlot">0</span></span></div>
     <div class="qcard" id="tcard" style="margin-top:6px">
       <div class="q" id="tq"></div>
       <div class="timer" id="tTimer"><i></i></div>
@@ -351,10 +351,11 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
       <div class="box">
         <h3>Toets</h3>
         <div class="row">Aantal sommen per toets
-          <select id="testNSel" onchange="settings.testN=+this.value;store.saveSettings(settings)"><option value="10">10</option><option value="20">20</option><option value="30">30</option><option value="0">alle sommen van de gekozen tafels</option></select></div>
+          <select id="testNSel" onchange="settings.testN=+this.value;store.saveSettings(settings)"><option value="20">20</option><option value="30">30</option><option value="40">40 (zoals op school: 40 sommen in 2 minuten)</option></select></div>
         <div class="row">Tijd per som
           <select id="testSecSel" onchange="settings.testSec=+this.value;store.saveSettings(settings)"><option value="3">3 seconden (zoals op school)</option><option value="4">4 seconden</option><option value="5">5 seconden</option></select></div>
-        <div class="muted"><b>Bliksemronde</b> (zelf): een som telt als ⚡ vlot als ze binnen die tijd op "Ik weet het!" drukt, daarna binnen 2 seconden begint met intikken, en het antwoord goed is. <b>Overhoren</b>: jij beoordeelt het; de app telt zichtbaar af en laat na afloop van de tijd het antwoord klein zien.</div>
+        <div class="muted">Heeft ze minder dan 40 verschillende sommen (bijvoorbeeld 2 tafels = 20 sommen), dan komen sommen twee keer voor. De app meet ook de <b>totale tijd</b>: bij 40 sommen en 3 seconden per som is de norm 2 minuten.</div>
+        <div class="muted" style="margin-top:6px"><b>Bliksemronde</b> (zelf): een som telt als ⚡ vlot als ze binnen die tijd op "Ik weet het!" drukt, daarna binnen 2 seconden begint met intikken, en het antwoord goed is. <b>Overhoren</b>: jij beoordeelt het; de app telt zichtbaar af en laat na afloop van de tijd het antwoord klein zien.</div>
         <div class="row"><button class="btn primary" onclick="startTest('overhoor')">👪 Nu overhoren</button></div>
       </div>
       <div class="box">
@@ -383,7 +384,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
    ========================================================= */
 const CFG=window.TAFELHELD_CONFIG||{};
 const WANT_ONLINE=!!(CFG.supabaseUrl&&CFG.supabaseAnonKey);
-const DEFAULTS={tables:[2,3,4,5,10],rewardMin:5,music:true,sfx:true,rewardMs:0,stickers:[],bestStreak:0,bestStreakAt:null,testN:20,testSec:3};
+const DEFAULTS={tables:[2,3,4,5,10],rewardMin:5,music:true,sfx:true,rewardMs:0,stickers:[],bestStreak:0,bestStreakAt:null,testN:40,testSec:3};
 const $=s=>document.querySelector(s);
 const rnd=n=>Math.floor(Math.random()*n);
 const nowIso=()=>new Date().toISOString();
@@ -564,7 +565,7 @@ const SupaStore={
     }
   },
   account(){return `Online opslag in Supabase. Ingelogd als <b>${userEmail}</b>.`+(this.pending()?` <span class="muted">(${this.pending()} antwoorden wachten op internet)</span>`:'')
-    +((missingCols.size||missingTables)?'<div class="note" style="margin-top:8px">De database is nog niet helemaal bijgewerkt. Voer het SQL-script <b>supabase-update-toets.sql</b> uit in Supabase (SQL Editor). Tot die tijd wordt niet alles online bewaard.</div>':'')}
+    +((missingCols.size||missingTables)?'<div class="note" style="margin-top:8px">De database is nog niet helemaal bijgewerkt. Voer het SQL-script <b>supabase-update.sql</b> uit in Supabase (SQL Editor). Tot die tijd wordt niet alles online bewaard.</div>':'')}
 };
 
 let store=LocalStore,settings={...DEFAULTS},facts={};
@@ -771,7 +772,8 @@ document.addEventListener('keydown',e=>{
 document.addEventListener('visibilitychange',()=>{if(document.hidden){stopMusic();store.flushSettings()}else if($('#play').classList.contains('active'))startMusic()});
 
 /* ---------- toetsen: Bliksemronde (zelf) en Overhoren (ouder) ---------- */
-let T=null,tTimer=null,lastTest={};
+let T=null,tTimer=null,clockT=null,lastTest={};
+const mmss=ms=>{const s=Math.round(ms/1000);return Math.floor(s/60)+':'+String(s%60).padStart(2,'0')};
 function computeLastTest(r){const m={};[...r.answers].sort((a,b)=>Date.parse(a.created_at)-Date.parse(b.created_at)).forEach(a=>m[a.a+'x'+a.tafel]=a.result);return m}
 function refreshLastTest(){store.loadTests().then(r=>lastTest=computeLastTest(r)).catch(()=>{})}
 function openTestMenu(){$('#tmSec').textContent=settings.testSec||3;show('testMenu')}
@@ -786,9 +788,12 @@ async function startTest(mode){
   audio();stopMusic();closeModal();
   if(store.online)settings=await store.loadSettings();
   if(!settings.tables.length){modal(`<div class="em">🙈</div><h2>Nog geen tafels</h2><p>Vraag papa of mama om tafels te kiezen.</p><button class="big-btn" style="width:100%" onclick="goHome()">Oké</button>`);return}
-  const keys=shuffle(allKeys()),n=settings.testN?Math.min(settings.testN,keys.length):keys.length;
-  T={mode,keys:keys.slice(0,n),i:-1,sec:settings.testSec||3,res:[],reward:0,
-     rec:{id:uuid(),started_at:nowIso(),ended_at:nowIso(),mode,planned:n,total:0,vlot:0,laat:0,fout:0,seconds:settings.testSec||3,device:DEVICE}};
+  const n=settings.testN||40,base=allKeys();let keys=[];
+  while(keys.length<n){const sh=shuffle([...base]);if(keys.length&&sh[0]===keys[keys.length-1])sh.push(sh.shift());keys=keys.concat(sh)} // te weinig sommen? dan komen ze vaker voor
+  T={mode,keys:keys.slice(0,n),i:-1,sec:settings.testSec||3,res:[],reward:0,t0:performance.now(),
+     rec:{id:uuid(),started_at:nowIso(),ended_at:nowIso(),mode,planned:n,total:0,vlot:0,laat:0,fout:0,seconds:settings.testSec||3,duration_ms:0,net_ms:0,device:DEVICE}};
+  clearInterval(clockT);$('#tClock').textContent='⏱ 0:00';
+  clockT=setInterval(()=>{if(T)$('#tClock').textContent='⏱ '+mmss(performance.now()-T.t0)},250);
   lastAct=Date.now();
   $('#tZelf').style.display=mode==='zelf'?'':'none';$('#tJudge').style.display=mode==='overhoor'?'':'none';
   show('test');nextTest();
@@ -835,10 +840,12 @@ function judge(res){if(!T||T.busy||T.mode!=='overhoor')return;const [n,t]=T.keys
 function recordTest(n,t,given,res,recall,first){
   T.busy=true;clearTimeout(tTimer);
   const now=Date.now(),act=Math.min(now-lastAct,30000);lastAct=now;settings.rewardMs+=act;
+  const somMs=Math.round(performance.now()-T.start); // tijd van tonen tot antwoord/beoordeling
   T.rec.total++;T.rec[res]++;T.rec.ended_at=nowIso();
+  T.rec.net_ms+=somMs;T.rec.duration_ms=Math.round(performance.now()-T.t0);
   T.res.push({key:n+'x'+t,res});lastTest[n+'x'+t]=res;
   store.saveTest(T.rec);
-  store.addTestAnswer({id:uuid(),test_id:T.rec.id,a:n,tafel:t,mode:T.mode,given,result:res,recall_ms:recall,first_ms:first,created_at:nowIso()});
+  store.addTestAnswer({id:uuid(),test_id:T.rec.id,a:n,tafel:t,mode:T.mode,given,result:res,recall_ms:recall,first_ms:first,ms:somMs,created_at:nowIso()});
   const target=settings.rewardMin*60000;if(settings.rewardMs>=target){settings.rewardMs-=target;T.reward++}
   store.saveSettings(settings);
   const card=$('#tcard'),fb=$('#tfb');
@@ -846,16 +853,20 @@ function recordTest(n,t,given,res,recall,first){
   else if(res==='laat'){card.className='qcard good';fb.textContent='🐢 Goed, maar nog niet snel genoeg';sfxSlow()}
   else{card.className='qcard bad';fb.innerHTML=`Het is <span style="color:var(--good)">${n} × ${t} = ${n*t}</span>`;sfxBad()}
   $('#tVlot').textContent=T.rec.vlot;
-  setTimeout(()=>{if(T&&$('#test').classList.contains('active'))nextTest()},res==='fout'?2000:T.mode==='overhoor'?700:1100);
+  setTimeout(()=>{if(T&&$('#test').classList.contains('active'))nextTest()},T.mode==='overhoor'?(res==='fout'?1200:350):res==='fout'?2000:1100);
 }
 function stopTest(){if(!T)return;clearTimeout(tTimer);finishTest()}
+function normTxt(r){const norm=r.total*(r.seconds||3)*1000;return r.net_ms<=norm}
 function finishTest(){
-  clearTimeout(tTimer);const r=T.rec,rew=T.reward,res=T.res;T=null;store.flushSettings();
+  clearTimeout(tTimer);clearInterval(clockT);const r=T.rec,rew=T.reward,res=T.res;T=null;store.flushSettings();
   if(!r.total){goHome();return}
-  const todo=res.filter(x=>x.res!=='vlot').map(x=>{const [n,t]=x.key.split('x').map(Number);return `<span>${x.res==='fout'?'❌':'🐢'} ${n} × ${t} = ${n*t}</span>`});
+  const worst={},rank={vlot:0,laat:1,fout:2};res.forEach(x=>{if(!(x.key in worst)||rank[x.res]>rank[worst[x.key]])worst[x.key]=x.res});
+  const todo=Object.entries(worst).map(([key,r])=>({key,res:r})).filter(x=>x.res!=='vlot').sort((a,b)=>rank[b.res]-rank[a.res]).map(x=>{const [n,t]=x.key.split('x').map(Number);return `<span>${x.res==='fout'?'❌':'🐢'} ${n} × ${t} = ${n*t}</span>`});
   const pct=r.vlot/r.total,emo=pct>=.9?'🏆':pct>=.7?'🌟':'💪';
   if(pct>=.9){sfxRecord();confetti(['⚡','🏆','⭐','🍊'],26)}else sfxFanfare();
   modal(`<div class="em">${emo}</div><h2>${pct>=.9?'Toetsklaar!':pct>=.7?'Bijna toetsklaar!':'Goed gedaan!'}</h2>
+    <div style="font-size:22px;font-weight:800;margin-top:6px">⏱ ${mmss(r.net_ms)} <span style="font-size:16px;color:var(--soft);font-weight:600">(${(r.net_ms/r.total/1000).toFixed(1).replace('.',',')} s per som)</span></div>
+    ${r.total>=20?`<div style="font-weight:700;color:${normTxt(r)?'var(--good)':'#e08a1e'}">${normTxt(r)?`🎉 Binnen ${mmss(r.total*(r.seconds||3)*1000)}, net als op school!`:`Doel: ${r.total} sommen in ${mmss(r.total*(r.seconds||3)*1000)}`}</div>`:''}
     <p>⚡ <b>${r.vlot}</b> van de ${r.total} bliksemsnel${r.laat?`<br>🐢 ${r.laat} goed, maar nog te langzaam`:''}${r.fout?`<br>❌ ${r.fout} nog niet goed`:''}</p>
     ${todo.length?`<div style="font-weight:700">Deze gaan we extra oefenen:</div><div class="chips">${todo.slice(0,15).join('')}</div>`:''}
     <button class="big-btn" style="width:100%" onclick="${rew?'giveSticker(true)':'goHome()'}">${rew?'Pak je capibara! 🎁':'Klaar'}</button>`);
@@ -879,7 +890,7 @@ function ptab(w){$('#pa').style.display=w==='a'?'':'none';$('#ps').style.display
 /* ---------- instellingen ---------- */
 function renderSettings(){
   $('#tgrid').innerHTML=[1,2,3,4,5,6,7,8,9,10].map(t=>`<button class="${settings.tables.includes(t)?'on':''}" onclick="toggleTable(${t})">${t}</button>`).join('');
-  $('#rewardSel').value=settings.rewardMin;$('#testNSel').value=settings.testN;$('#testSecSel').value=settings.testSec;$('#musicChk').checked=settings.music;$('#sfxChk').checked=settings.sfx;
+  $('#rewardSel').value=settings.rewardMin;if(![20,30,40].includes(settings.testN))settings.testN=40;$('#testNSel').value=settings.testN;$('#testSecSel').value=settings.testSec;$('#musicChk').checked=settings.music;$('#sfxChk').checked=settings.sfx;
   $('#acctInfo').innerHTML=store.account();
   $('#acctBtns').innerHTML=store.online?`<button class="btn" id="logoutBtn" onclick="logout()">Uitloggen op dit apparaat</button>`:'';
 }
@@ -926,11 +937,11 @@ async function loadDemo(){
   }
   [[12,'zelf'],[8,'zelf'],[5,'overhoor'],[1,'zelf']].forEach(([d,mode])=>{
     const st=new Date(now-d*864e5);st.setHours(18,rnd(50),0,0);
-    const R={id:uuid(),started_at:st.toISOString(),mode,planned:20,total:0,vlot:0,laat:0,fout:0,seconds:3,device:'Android'};let t0=+st;
-    shuffle(T.flatMap(t=>[...Array(10)].map((_,i)=>(i+1)+'x'+t))).slice(0,20).forEach(k=>{
+    const R={id:uuid(),started_at:st.toISOString(),mode,planned:40,total:0,vlot:0,laat:0,fout:0,seconds:3,duration_ms:0,net_ms:0,device:'Android'};let t0=+st;
+    shuffle(T.flatMap(t=>[...Array(10)].map((_,i)=>(i+1)+'x'+t))).slice(0,40).forEach(k=>{
       const [n,t]=k.split('x').map(Number),ok=Math.random()<pOk(k,t,d),dk=denk(k,t,ok,d);
-      const res=!ok?'fout':dk<=2600?'vlot':'laat';R.total++;R[res]++;t0+=4000;
-      tas.push({id:uuid(),test_id:R.id,a:n,tafel:t,mode,given:mode==='zelf'?(ok?n*t:n*t+t):null,result:res,recall_ms:Math.round(dk*.8),first_ms:mode==='zelf'?600+rnd(900):null,created_at:new Date(t0).toISOString()});
+      const res=!ok?'fout':dk<=2600?'vlot':'laat',sm=Math.round(dk*.8)+(mode==='zelf'?1200:300);R.total++;R[res]++;R.net_ms+=sm;R.duration_ms+=sm+(mode==='zelf'?1100:400);t0+=sm+800;
+      tas.push({id:uuid(),test_id:R.id,a:n,tafel:t,mode,given:mode==='zelf'?(ok?n*t:n*t+t):null,result:res,recall_ms:Math.round(dk*.8),first_ms:mode==='zelf'?600+rnd(900):null,ms:sm,created_at:new Date(t0).toISOString()});
     });
     R.ended_at=new Date(t0).toISOString();ts.push(R);
   });
@@ -1005,12 +1016,14 @@ function drawAnalysis(){
     :'<div class="muted">Geen opvallende probleemsommen (een som moet minstens 2 keer gevraagd zijn).</div>';
 
   // toetsen
-  if(!tests.length){$('#testsBox').innerHTML='<div class="muted">Nog geen toetsen gedaan. Ze kan zelf een ⚡ Bliksemronde doen via "Toets" op het beginscherm, of jij overhoort haar (Instellingen → Nu overhoren).</div>'+(store.online&&missingTables?'<div class="note" style="margin-top:8px">De tabellen voor toetsen ontbreken nog in de database. Voer supabase-update-toets.sql uit.</div>':'');return}
+  if(!tests.length){$('#testsBox').innerHTML='<div class="muted">Nog geen toetsen gedaan. Ze kan zelf een ⚡ Bliksemronde doen via "Toets" op het beginscherm, of jij overhoort haar (Instellingen → Nu overhoren).</div>'+(store.online&&missingTables?'<div class="note" style="margin-top:8px">De tabellen voor toetsen ontbreken nog in de database. Voer supabase-update.sql uit.</div>':'');return}
   const tl=tests.slice(-14);
   $('#testsBox').innerHTML=`<div class="muted">Percentage ⚡ vlot per toets (⚡ = Bliksemronde, 👪 = overhoord)</div>
     <div class="tbars">${tl.map(t=>{const p=t.vlot/t.total;return `<div class="d"><em>${Math.round(p*100)}%</em><i style="height:${p*75}%;background:${col(p)}"></i>${t.mode==='overhoor'?'👪':'⚡'}<br>${dstr(t.started_at,{day:'numeric',month:'numeric'})}</div>`}).join('')}</div>
-    <table class="hard"><tr><th>Datum</th><th>Soort</th><th>⚡ vlot</th><th>🐢 te laat</th><th>❌ fout</th><th>Score</th></tr>
-    ${[...tests].reverse().map(t=>`<tr><td>${dstr(t.started_at)}</td><td>${t.mode==='overhoor'?'👪 Overhoord':'⚡ Bliksemronde'}${t.total<t.planned?' <span class="muted">(gestopt)</span>':''}</td><td>${t.vlot}</td><td>${t.laat}</td><td>${t.fout}</td><td><b>${Math.round(t.vlot/t.total*100)}%</b></td></tr>`).join('')}</table>`;
+    <div style="overflow-x:auto"><table class="hard"><tr><th>Datum</th><th>Soort</th><th>Sommen</th><th>⚡</th><th>🐢</th><th>❌</th><th>Tijd</th><th>Per som</th><th>Score</th></tr>
+    ${[...tests].reverse().map(t=>{const tm=t.net_ms?`<b>${mmss(t.net_ms)}</b> <span style="color:${normTxt(t)?'#1f9d55':'#d9822b'}">${normTxt(t)?'✓':'✗'}</span>`+(t.duration_ms?`<div class="muted">totaal ${mmss(t.duration_ms)}</div>`:''):'–';
+      return `<tr><td>${dstr(t.started_at)}</td><td>${t.mode==='overhoor'?'👪 Overhoord':'⚡ Bliksem'}${t.total<t.planned?' <span class="muted">(gestopt)</span>':''}</td><td>${t.total}</td><td>${t.vlot}</td><td>${t.laat}</td><td>${t.fout}</td><td>${tm}</td><td>${t.net_ms?(t.net_ms/t.total/1000).toFixed(1)+' s':'–'}</td><td><b>${Math.round(t.vlot/t.total*100)}%</b></td></tr>`}).join('')}</table></div>
+    <div class="muted" style="margin-top:6px"><b>Tijd</b> = opgetelde tijd per som (van tonen tot antwoord of tot jouw tik); ✓ = binnen de norm van ${settings.testSec||3} seconden per som (40 sommen = 2 minuten). <b>Totaal</b> = de hele toets inclusief de korte pauzes tussen de sommen.</div>`;
 }
 function drawHeat(){
   const {F,tans}=A;
@@ -1030,7 +1043,7 @@ function drawHeat(){
   const hm=$('#heat');hm.style.gridTemplateColumns='30px repeat(10,minmax(28px,1fr))';hm.innerHTML=h;$('#cellInfo').textContent='';
   hm.onclick=e=>{const c=e.target.closest('.c');if(!c)return;hm.querySelectorAll('.sel').forEach(x=>x.classList.remove('sel'));c.classList.add('sel');
     const k=c.dataset.k,[n,t]=k.split('x').map(Number),f=F[k];
-    const hist=tans.filter(a=>a.a===n&&a.tafel===t).sort((a,b)=>a.created_at<b.created_at?-1:1).map(a=>RES[a.result][0]).join(' ');
+    const hist=tans.filter(a=>a.a===n&&a.tafel===t).sort((a,b)=>a.created_at<b.created_at?-1:1).map(a=>RES[a.result][0]+(a.ms?' '+(a.ms/1000).toFixed(1)+'s':'')).join(' · ');
     let txt=`<b>${n} × ${t} = ${n*t}</b>: `;
     txt+=f?`${f.tries}× geoefend, ${f.correct}× goed`+(denkS(f)!==null?`, gemiddelde denktijd ${denkS(f).toFixed(1)} s, ${Math.round(vlotP(f)*100)}% vlot`:`, gemiddeld ${(f.ms/f.tries/1000).toFixed(1)} s`)+'.'+(f.wrongs.length?` Laatste foute antwoorden: ${f.wrongs.join(', ')}.`:''):'nog niet geoefend.';
     txt+=hist?` Toetsen (oud → nieuw): ${hist}`:' Nog niet getoetst.';
