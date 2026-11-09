@@ -224,7 +224,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
 <section class="screen" id="lockScr">
   <div class="pwrap lock">
     <h2>Alleen voor ouders</h2>
-    <p class="muted">Reken deze som uit om verder te gaan. Een rekenmachine mag.</p>
+    <p class="muted">Reken deze som uit om verder te gaan.</p>
     <div style="font-size:34px;font-weight:800" id="lockQ"></div>
     <input id="lockIn" inputmode="numeric" autocomplete="off">
     <div class="row" style="justify-content:center">
@@ -626,7 +626,8 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden){stopMusic(
 let lockAns=0;
 function hardNum(lo,hi){let x;do{x=lo+rnd(hi-lo+1)}while(x%10===0||x%11===0);return x}
 function openLock(){
-  const a=hardNum(23,98),b=hardNum(13,39);lockAns=a*b;
+  // zelfde tiental, eenheden samen 10 (bijv. 32 × 38) – uit het hoofd: 3×4=12 en 2×8=16 → 1216
+  const t=2+rnd(8),u=1+rnd(9),a=t*10+u,b=t*10+(10-u);lockAns=a*b;
   $('#lockQ').textContent=a+' × '+b+' = ?';$('#lockIn').value='';$('#lockMsg').textContent='';
   show('lockScr');setTimeout(()=>$('#lockIn').focus(),50);
 }
