@@ -628,10 +628,10 @@ const TUNES={
     [77,1],[77,1],[77,1.5],[77,.5],[77,1],[76,1],[76,1],[76,.5],[76,.5],[76,1],[74,1],[74,1],[76,1],[74,2],[79,2],
     [76,1],[76,1],[76,2],[76,1],[76,1],[76,2],[76,1],[79,1],[72,1.5],[74,.5],[76,4],
     [77,1],[77,1],[77,1],[77,1],[77,1],[76,1],[76,1],[76,.5],[76,.5],[79,1],[79,1],[77,1],[74,1],[72,4]]},
-  // Auld Lang Syne (traditioneel)
-  nieuw:{beat:0.42,bar:4,off:1,bass:[48,43,48,53,48,43,45,48],n:[
-    [67,1],[72,1.5],[72,.5],[72,1],[76,1],[74,1.5],[72,.5],[74,1],[76,1],[72,1.5],[72,.5],[76,1],[79,1],[81,3],
-    [81,1],[79,1.5],[76,.5],[76,1],[72,1],[74,1.5],[72,.5],[74,1],[76,1],[72,1.5],[69,.5],[69,1],[67,1],[72,3],[null,1]]}
+  // Oliebollenpolka (eigen deuntje), huppelend in 2/4
+  nieuw:{beat:0.3,bar:1,off:0,bass:[48,55,48,55,53,48,53,48,48,55,48,55,53,55,48,48],n:[
+    [79,.5],[76,.5],[79,.5],[76,.5],[79,.5],[81,.5],[79,1],[77,.5],[74,.5],[77,.5],[74,.5],[77,.5],[79,.5],[77,1],[76,.5],[72,.5],[76,.5],[79,.5],[84,1],[79,1],[81,.5],[77,.5],[74,.5],[71,.5],[72,2],
+    [79,.5],[76,.5],[79,.5],[76,.5],[79,.5],[81,.5],[79,1],[77,.5],[74,.5],[77,.5],[74,.5],[77,.5],[79,.5],[77,1],[76,.5],[79,.5],[84,.5],[79,.5],[81,.5],[77,.5],[74,.5],[71,.5],[72,2]]}
 };
 let tuneI=0,tuneBeat=0;
 
@@ -872,11 +872,10 @@ function goHome(){stopMusic();closeModal();store.flushSettings();applyTheme();re
 function openAlbum(tab){
   const own=new Set(settings.stickers),tabs=albumTabs(),th=activeTheme();
   if(tab)albumTab=tab;if(!albumTab||!tabs.some(t=>t[0]===albumTab))albumTab=th!=='normaal'?th:'gewoon';
-  $('#albumTabs').innerHTML=tabs.length>1?tabs.map(([k,l,ids])=>`<button class="${k===albumTab?'on':''}" onclick="openAlbum('${k}')">${l} (${ids.filter(i=>own.has(i)).length}/${ids.length})</button>`).join(''):'';
+  $('#albumTabs').innerHTML=tabs.length>1?tabs.map(([k,l,ids])=>`<button class="${k===albumTab?'on':''}" onclick="openAlbum('${k}')">${l} (${ids.filter(i=>own.has(i)||own.has(i+1000)).length}/${ids.length})</button>`).join(''):'';
   const ids=tabs.find(t=>t[0]===albumTab)[2];
-  let h=ids.map(i=>own.has(i)?`<div class="stk">${capyHtml(i)}<span>${stickerInfo(i).name}</span></div>`:`<div class="stk locked">${capyHtml(i,'locked')}<span>???</span></div>`).join('');
-  const sh=ids.filter(i=>own.has(i+1000));
-  if(sh.length)h+='<div class="shinyHead">✨ Glimmend</div>'+sh.map(i=>`<div class="stk">${capyHtml(i+1000)}<span>${stickerInfo(i+1000).name}</span></div>`).join('');
+  // heeft ze de glimmende versie, dan staat die op dezelfde plek in plaats van de gewone
+  const h=ids.map(i=>{const k=own.has(i+1000)?i+1000:i;return own.has(k)?`<div class="stk">${capyHtml(k)}<span>${stickerInfo(k).name}</span></div>`:`<div class="stk locked">${capyHtml(i,'locked')}<span>???</span></div>`}).join('');
   $('#album').innerHTML=h;show('albumScr');
 }
 
