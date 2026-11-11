@@ -179,6 +179,7 @@ body.themed .peek{color:var(--t-soft)}
 .tgrid{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;max-width:420px}
 .tgrid button{padding:12px 0;border-radius:12px;background:#f1eefc;font-weight:700;font-size:18px;font-family:inherit}
 .tgrid button.on{background:#7b5cff;color:#fff}
+.tgrid.passed button.on{background:#22a35a;color:#fff}
 .row{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:8px 0;font-size:15px}
 select{font:inherit;padding:6px 8px;border-radius:8px;border:1px solid #d9d2f5}
 .kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
@@ -374,6 +375,9 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
         <div class="tgrid" id="tgrid"></div>
         <div class="row"><button class="btn" onclick="setTables([1,2,3,4,5,6,7,8,9,10])">Alles</button><button class="btn" onclick="setTables([])">Niets</button></div>
         <div class="muted">Wijzigingen gelden op al haar apparaten zodra ze daar opnieuw begint met oefenen.</div>
+        <h3 style="margin-top:16px">Welke tafels zijn al gehaald op school?</h3>
+        <div class="tgrid passed" id="pgrid"></div>
+        <div class="muted" id="passedInfo"></div>
       </div>
       <div class="box">
         <h3>Thema</h3>
@@ -415,6 +419,10 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
         <div class="muted">"Analyse wissen" verwijdert alle oefenrondes, antwoorden en toetsen, op alle apparaten. Haar stickers en haar record blijven staan, tenzij je die apart reset.</div>
       </div>
       <div class="box">
+        <h3>App op dit apparaat</h3>
+        <div id="installBox"></div>
+      </div>
+      <div class="box">
         <h3>Account en opslag</h3>
         <div id="acctInfo" class="row"></div>
         <div class="row" id="acctBtns"></div>
@@ -431,7 +439,7 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
    ========================================================= */
 const CFG=window.TAFELHELD_CONFIG||{};
 const WANT_ONLINE=!!(CFG.supabaseUrl&&CFG.supabaseAnonKey);
-const DEFAULTS={tables:[2,3,4,5,10],rewardMin:5,music:true,sfx:true,rewardMs:0,stickers:[],bestStreak:0,bestStreakAt:null,testN:40,testSec:3,theme:'auto',collect:{}};
+const DEFAULTS={tables:[2,3,4,5,10],rewardMin:5,music:true,sfx:true,rewardMs:0,stickers:[],bestStreak:0,bestStreakAt:null,testN:40,testSec:3,theme:'auto',collect:{},passed:[]};
 const $=s=>document.querySelector(s);
 const rnd=n=>Math.floor(Math.random()*n);
 const nowIso=()=>new Date().toISOString();
@@ -708,7 +716,7 @@ const SupaStore={
       if(error)throw error;
       if(!data)return cache||{...DEFAULTS};
       const s={tables:data.tables||[],rewardMin:data.reward_min,music:data.music,sfx:data.sfx,rewardMs:Number(data.reward_ms)||0,stickers:data.stickers||[],
-        bestStreak:data.best_streak||0,bestStreakAt:data.best_streak_at||null,testN:data.test_n??DEFAULTS.testN,testSec:data.test_sec??DEFAULTS.testSec,theme:data.theme||'auto',collect:data.collect||{}};
+        bestStreak:data.best_streak||0,bestStreakAt:data.best_streak_at||null,testN:data.test_n??DEFAULTS.testN,testSec:data.test_sec??DEFAULTS.testSec,theme:data.theme||'auto',collect:data.collect||{},passed:data.passed||[]};
       lsSet('th-settings',s);return s;
     }catch(e){console.warn(e);return cache||{...DEFAULTS}}
   },
@@ -716,7 +724,7 @@ const SupaStore={
   async flushSettings(){
     clearTimeout(this.st);this.st=null;const s=this.pendingS;if(!s)return;
     try{const {error}=await safeUpsert('settings',[{user_id:uid,tables:s.tables,reward_min:s.rewardMin,music:s.music,sfx:s.sfx,reward_ms:Math.round(s.rewardMs),stickers:s.stickers,
-        best_streak:s.bestStreak||0,best_streak_at:s.bestStreakAt||null,test_n:s.testN,test_sec:s.testSec,theme:s.theme||'auto',collect:s.collect||{},updated_at:nowIso()}]);
+        best_streak:s.bestStreak||0,best_streak_at:s.bestStreakAt||null,test_n:s.testN,test_sec:s.testSec,theme:s.theme||'auto',collect:s.collect||{},passed:s.passed||[],updated_at:nowIso()}]);
       if(error)throw error;if(this.pendingS===s)this.pendingS=null}catch(e){console.warn('instellingen niet verstuurd',e)}
   },
   saveOb(){lsSet('th-outbox',this.ob)},
@@ -849,7 +857,13 @@ function sfxSlow(){if(!settings.sfx||!audio())return;duck();const t=ac.currentTi
 function previewSounds(){audio();const s=settings.sfx;settings.sfx=true;sfxGood();setTimeout(sfxBad,1200);setTimeout(sfxFanfare,2600);setTimeout(()=>{sfxRecord();settings.sfx=s},4200)}
 
 /* ---------- home & album ---------- */
-function tablesText(){const t=[...settings.tables].sort((a,b)=>a-b);if(!t.length)return 'Nog geen tafels gekozen';return 'Tafel van '+(t.length>1?t.slice(0,-1).join(', ')+' en '+t[t.length-1]:t[0])}
+function tablesText(){
+  const all=[...settings.tables].sort((a,b)=>a-b);if(!all.length)return 'Nog geen tafels gekozen';
+  const P=settings.passed||[],nw=all.filter(t=>!P.includes(t)),old=all.filter(t=>P.includes(t));
+  const list=t=>t.length>1?t.slice(0,-1).join(', ')+' en '+t[t.length-1]:String(t[0]);
+  if(nw.length&&old.length)return 'Tafel van '+list(nw)+' · herhalen: '+list(old);
+  return 'Tafel van '+list(all);
+}
 function rewardPct(){return Math.min(100,settings.rewardMs/(settings.rewardMin*60000)*100)}
 function renderHome(){
   $('#homeTables').textContent=tablesText();
@@ -896,10 +910,15 @@ function pick(){
     const lt=lastTest[k];if(lt&&lt!=='vlot')x+=1.5; // laatste toets niet vlot
     if(retry.some(r=>r.key===k))x*=0.2;      // staat al ingepland
     return x});
+  // nieuwe tafels samen ongeveer 2/3 van de sommen, al gehaalde tafels samen ongeveer 1/3
+  const isP=keys.map(k=>isPassedKey(k));
+  const sumN=w.reduce((a,x,i)=>isP[i]?a:a+x,0),sumP=w.reduce((a,x,i)=>isP[i]?a+x:a,0);
+  if(sumN>0&&sumP>0)for(let i=0;i<w.length;i++)w[i]=isP[i]?w[i]*(1/3)/sumP:w[i]*(2/3)/sumN;
   let r=Math.random()*w.reduce((a,b)=>a+b,0);
   for(let i=0;i<keys.length;i++){r-=w[i];if(r<=0)return keys[i]}
   return keys.find(k=>k!==lastKey)||keys[0];
 }
+function isPassedKey(k){return (settings.passed||[]).includes(+k.split('x')[1])}
 function schedule(key,gap){retry=retry.filter(r=>r.key!==key);retry.push({key,due:qCount+gap})}
 function buildPad(){
   const ks=['1','2','3','4','5','6','7','8','9','del','0','ok'];
@@ -1020,8 +1039,11 @@ async function startTest(mode){
   audio();stopMusic();closeModal();
   if(store.online)settings=await store.loadSettings();
   if(!settings.tables.length){modal(`<div class="em">🙈</div><h2>Nog geen tafels</h2><p>Vraag een grote om tafels te kiezen.</p><button class="big-btn" style="width:100%" onclick="goHome()">Oké</button>`);return}
-  const n=settings.testN||40,base=allKeys();let keys=[];
-  while(keys.length<n){const sh=shuffle([...base]);if(keys.length&&sh[0]===keys[keys.length-1])sh.push(sh.shift());keys=keys.concat(sh)} // te weinig sommen? dan komen ze vaker voor
+  const n=settings.testN||40,base=allKeys();
+  const fill=(src,cnt)=>{let out=[];while(out.length<cnt){out=out.concat(shuffle([...src]))}return out.slice(0,cnt)}; // te weinig sommen? dan komen ze vaker voor
+  const nieuw=base.filter(k=>!isPassedKey(k)),oud=base.filter(k=>isPassedKey(k));
+  let keys=(nieuw.length&&oud.length)?shuffle([...fill(nieuw,Math.round(n*2/3)),...fill(oud,n-Math.round(n*2/3))]):fill(base,n);
+  for(let i=1;i<keys.length;i++)if(keys[i]===keys[i-1]){const j=keys.findIndex((k,x)=>x>i&&k!==keys[i]&&k!==keys[i-1]&&(x+1>=keys.length||keys[x+1]!==keys[i]));if(j>-1)[keys[i],keys[j]]=[keys[j],keys[i]]} // nooit twee keer dezelfde som achter elkaar
   T={mode,keys:keys.slice(0,n),i:-1,sec:settings.testSec||3,res:[],reward:0,t0:performance.now(),
      rec:{id:uuid(),started_at:nowIso(),ended_at:nowIso(),mode,planned:n,total:0,vlot:0,laat:0,fout:0,seconds:settings.testSec||3,duration_ms:0,net_ms:0,device:DEVICE}};
   clearInterval(clockT);$('#tClock').textContent='⏱ 0:00';
@@ -1123,13 +1145,21 @@ function ptab(w){$('#pa').style.display=w==='a'?'':'none';$('#ps').style.display
 /* ---------- instellingen ---------- */
 function renderSettings(){
   $('#tgrid').innerHTML=[1,2,3,4,5,6,7,8,9,10].map(t=>`<button class="${settings.tables.includes(t)?'on':''}" onclick="toggleTable(${t})">${t}</button>`).join('');
+  const P=settings.passed||[];
+  $('#pgrid').innerHTML=[1,2,3,4,5,6,7,8,9,10].map(t=>`<button class="${P.includes(t)?'on':''}" onclick="togglePassed(${t})">${P.includes(t)?'✓ ':''}${t}</button>`).join('');
+  {const sel=settings.tables,nw=sel.filter(t=>!P.includes(t)),old=sel.filter(t=>P.includes(t));
+   $('#passedInfo').innerHTML=nw.length&&old.length?`Ze oefent nu <b>ongeveer 2/3 nieuwe sommen</b> (tafel ${nw.join(', ')}) en <b>1/3 herhaling</b> (tafel ${old.join(', ')}). Dat geldt ook voor de toetsen.`
+     :old.length&&!nw.length?'Alle gekozen tafels zijn al gehaald, dus ze herhaalt alleen. Kies hierboven een nieuwe tafel om de verdeling 2/3 nieuw en 1/3 herhaling te krijgen.'
+     :'Gehaalde tafels die je hierboven ook aanzet, komen terug in ongeveer 1 op de 3 sommen. Zo blijft de nadruk op de nieuwe tafels.'}
   $('#rewardSel').value=settings.rewardMin;if(![20,30,40].includes(settings.testN))settings.testN=40;$('#testNSel').value=settings.testN;$('#testSecSel').value=settings.testSec;$('#musicChk').checked=settings.music;$('#sfxChk').checked=settings.sfx;
   $('#themeSel').value=settings.theme||'auto';{const a=activeTheme();$('#themeNow').innerHTML='Nu actief: <b>'+(a==='normaal'?'Normaal':THEMES[a].label)+'</b>'+((settings.theme||'auto')==='auto'&&a!=='normaal'?' (automatisch, tot en met '+THEMES[a].until+')':'')+'.'}
+  renderInstall();
   $('#acctInfo').innerHTML=store.account();
   $('#acctBtns').innerHTML=store.online?`<button class="btn" id="logoutBtn" onclick="logout()">Uitloggen op dit apparaat</button>`:'';
 }
 function toggleTable(t){const s=settings.tables;settings.tables=s.includes(t)?s.filter(x=>x!==t):[...s,t].sort((a,b)=>a-b);store.saveSettings(settings);renderSettings()}
 function setTables(a){settings.tables=a;store.saveSettings(settings);renderSettings()}
+function togglePassed(t){const P=settings.passed||[];settings.passed=P.includes(t)?P.filter(x=>x!==t):[...P,t].sort((a,b)=>a-b);store.saveSettings(settings);renderSettings()}
 const armed={};
 function confirmTwice(id,label,fn){
   const b=$('#'+id);
@@ -1234,7 +1264,7 @@ function drawAnalysis(){
   const rows=[];
   for(let t=1;t<=10;t++){const r={t,tr:0,co:0,ta:0,tok:0,fs:0,q:0};for(let n=1;n<=10;n++){const f=F[n+'x'+t];if(f){r.tr+=f.tries;r.co+=f.correct;r.ta+=f.timedAll||0;r.tok+=f.timedOk||0;r.fs+=f.fsum||0;r.q+=f.quick||0}}if(r.tr)rows.push(r)}
   $('#perTable').innerHTML=rows.length?rows.sort((a,b)=>a.co/a.tr-b.co/b.tr).map(r=>{const a=r.co/r.tr,v=r.ta?r.q/r.ta:null;
-    return `<div class="trow"><b>Tafel van ${r.t}</b><div class="tb"><i style="width:${a*100}%;background:${col(a)}"></i></div><span>${Math.round(a*100)}% goed</span><span>${v===null?'–':'⚡ '+Math.round(v*100)+'% vlot'}</span><span class="muted">${r.tok?(r.fs/r.tok/1000).toFixed(1)+' s denken':''}</span></div>`}).join('')
+    return `<div class="trow"><b>Tafel van ${r.t}${(settings.passed||[]).includes(r.t)?' ✓':''}</b><div class="tb"><i style="width:${a*100}%;background:${col(a)}"></i></div><span>${Math.round(a*100)}% goed</span><span>${v===null?'–':'⚡ '+Math.round(v*100)+'% vlot'}</span><span class="muted">${r.tok?(r.fs/r.tok/1000).toFixed(1)+' s denken':''}</span></div>`}).join('')
     +'<div class="muted" style="margin-top:8px"><b>Denktijd</b> = tijd tot ze het eerste cijfer intikt; dat komt het dichtst bij "het antwoord opnoemen". <b>⚡ Vlot</b> = goed én binnen 3 seconden begonnen met intikken, zoals op de toets.</div>'
     :'<div class="muted">Nog geen gegevens. Laat haar eerst oefenen, of kies bij Instellingen "Vul met testdata".</div>';
 
@@ -1282,6 +1312,25 @@ function drawHeat(){
     txt+=f?`${f.tries}× geoefend, ${f.correct}× goed`+(denkS(f)!==null?`, gemiddelde denktijd ${denkS(f).toFixed(1)} s, ${Math.round(vlotP(f)*100)}% vlot`:`, gemiddeld ${(f.ms/f.tries/1000).toFixed(1)} s`)+'.'+(f.wrongs.length?` Laatste foute antwoorden: ${f.wrongs.join(', ')}.`:''):'nog niet geoefend.';
     txt+=hist?` Toetsen (oud → nieuw): ${hist}`:' Nog niet getoetst.';
     $('#cellInfo').innerHTML=txt};
+}
+
+/* ---------- installeerknop ---------- */
+let installEvt=null;
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();installEvt=e;renderInstall()});
+window.addEventListener('appinstalled',()=>{installEvt=null;renderInstall()});
+function isStandalone(){try{return matchMedia('(display-mode: standalone)').matches||navigator.standalone===true}catch(e){return false}}
+function renderInstall(){
+  const el=$('#installBox');if(!el)return;
+  const ios=/iPhone|iPad/i.test(navigator.userAgent);
+  if(isStandalone())el.innerHTML='<div class="row">✅ Tafelheld draait hier als geïnstalleerde app.</div>';
+  else if(installEvt)el.innerHTML='<div class="row"><button class="btn primary" onclick="doInstall()">📲 Installeer als app</button></div><div class="muted">Zet Tafelheld met een eigen icoon op het startscherm, als echte app.</div>';
+  else if(ios)el.innerHTML='<div class="muted">Op een iPhone of iPad: tik in Safari op het deelknopje en kies <b>Zet op beginscherm</b>.</div>';
+  else el.innerHTML='<div class="muted">Installeren kan nu niet met een knop. Meestal betekent dat: de app <b>staat al op dit apparaat</b>. Kijk in het app-overzicht of bij Instellingen → Apps of Tafelheld er staat, en sleep het icoon naar het startscherm. Staat hij er niet, gebruik dan in Chrome <b>⋮ → App installeren</b>. Lukt dat ook niet, volg dan de stappen voor helemaal opnieuw installeren.</div>';
+}
+async function doInstall(){
+  if(!installEvt)return;const e=installEvt;installEvt=null;
+  try{e.prompt();await e.userChoice}catch(err){}
+  renderInstall();
 }
 
 /* ---------- installeerbaar maken (Android: "Toevoegen aan startscherm") ---------- */
