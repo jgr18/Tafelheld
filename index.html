@@ -19,6 +19,12 @@ body{font-family:'Baloo 2',system-ui,sans-serif;color:var(--ink);background:line
 button{font-family:inherit;color:inherit;border:0;cursor:pointer}
 .screen{display:none;min-height:100vh;padding:16px;flex-direction:column;align-items:center;position:relative;z-index:1}
 #themeLayer{position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+.capydeco{position:absolute;inset:0;pointer-events:none;z-index:0;overflow:hidden}
+#play>.wrap{position:relative;z-index:1}
+.dcapy{position:absolute;filter:drop-shadow(0 3px 2px rgba(0,0,0,.2))}
+.dcapy>div{transform-origin:50% 60%}
+.dcapy.new>div{animation:popin .9s ease-out}
+@keyframes popin{0%{transform:scale(0) rotate(-30deg)}60%{transform:scale(1.35)}100%{transform:scale(1)}}
 .capy.tstk{aspect-ratio:240/200}
 .hero .capy.scene{aspect-ratio:340/250;width:min(86vw,330px)}
 .capy.shiny svg{filter:sepia(.75) saturate(2.4) brightness(1.12) drop-shadow(0 0 6px #ffd84d)}
@@ -253,14 +259,15 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
       <b style="font-size:20px">🎁 Volgende capibara-sticker</b>
       <div class="bar"><i id="homeBar"></i></div>
       <small id="homeBarTxt"></small>
+      <div id="capyCount" style="font-size:16px;font-weight:700;margin-top:4px"></div>
     </div>
     <div class="panel hc" id="homeCollect" style="display:none"><div id="hcSvg"></div><div><b id="hcName"></b><small id="hcTxt"></small></div></div>
-    <button class="sec-btn" onclick="openAlbum()">📒 Mijn capibara's (<span id="albumCount">0</span>)</button>
   </div>
 </section>
 
 <!-- PLAY -->
 <section class="screen" id="play">
+  <div class="capydeco" id="capyDeco" aria-hidden="true"></div>
   <div class="wrap">
     <div class="topbar">
       <button class="pill" onclick="stopPlay()">✋ Stop</button>
@@ -315,14 +322,6 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
   </div>
 </section>
 
-<!-- ALBUM -->
-<section class="screen" id="albumScr">
-  <div class="wrap" style="max-width:640px">
-    <div class="topbar"><button class="pill" onclick="goHome()">← Terug</button><span class="pill" style="flex:1;text-align:center">📒 Mijn capibara's</span></div>
-    <div class="atabs" id="albumTabs"></div>
-    <div class="album" id="album"></div>
-  </div>
-</section>
 
 <!-- OUDERSLOT -->
 <section class="screen" id="lockScr">
@@ -867,7 +866,7 @@ function tablesText(){
 function rewardPct(){return Math.min(100,settings.rewardMs/(settings.rewardMin*60000)*100)}
 function renderHome(){
   $('#homeTables').textContent=tablesText();
-  $('#albumCount').textContent=new Set(settings.stickers).size;
+  {const n=earnedIds().length;$('#capyCount').textContent=n?`🐾 Al ${n} ${n===1?'capibara':"capibara's"} verdiend. Ze staan om je sommen heen!`:'';}
   $('#homeBar').style.width=rewardPct()+'%';
   const left=Math.max(0,settings.rewardMin*60000-settings.rewardMs);
   $('#homeBarTxt').textContent='Nog ongeveer '+Math.max(1,Math.ceil(left/60000))+' min oefenen';
@@ -883,15 +882,6 @@ function renderHome(){
   }
 }
 function goHome(){stopMusic();closeModal();store.flushSettings();applyTheme();renderHome();show('home')}
-function openAlbum(tab){
-  const own=new Set(settings.stickers),tabs=albumTabs(),th=activeTheme();
-  if(tab)albumTab=tab;if(!albumTab||!tabs.some(t=>t[0]===albumTab))albumTab=th!=='normaal'?th:'gewoon';
-  $('#albumTabs').innerHTML=tabs.length>1?tabs.map(([k,l,ids])=>`<button class="${k===albumTab?'on':''}" onclick="openAlbum('${k}')">${l} (${ids.filter(i=>own.has(i)||own.has(i+1000)).length}/${ids.length})</button>`).join(''):'';
-  const ids=tabs.find(t=>t[0]===albumTab)[2];
-  // heeft ze de glimmende versie, dan staat die op dezelfde plek in plaats van de gewone
-  const h=ids.map(i=>{const k=own.has(i+1000)?i+1000:i;return own.has(k)?`<div class="stk">${capyHtml(k)}<span>${stickerInfo(k).name}</span></div>`:`<div class="stk locked">${capyHtml(i,'locked')}<span>???</span></div>`}).join('');
-  $('#album').innerHTML=h;show('albumScr');
-}
 
 /* ---------- oefenen ---------- */
 let firstKey=null,cur=null,input='',qStart=0,lastAct=0,sess=null,busy=false,streak=0,stars=0;
@@ -925,6 +915,53 @@ function buildPad(){
   $('#pad').innerHTML=ks.map(k=>`<button class="${k==='ok'?'ok':k==='del'?'del':''}" data-k="${k}">${k==='del'?'⌫':k==='ok'?'✓':k}</button>`).join('');
   $('#pad').onclick=e=>{const b=e.target.closest('button');if(b)press(b.dataset.k)};
 }
+/* ---------- verdiende capibara's als versiering om de som ---------- */
+let decoPlaced=[],decoSize=0,decoNew=null;
+function earnedIds(){ // elke capibara één keer; heeft ze de glimmende, dan die
+  const own=new Set(settings.stickers),out=[];
+  own.forEach(id=>{if(id<1000)out.push(own.has(id+1000)?id+1000:id);else if(!own.has(id-1000))out.push(id)});
+  return out;
+}
+function decoAvoid(){
+  const pr=$('#play').getBoundingClientRect();
+  return ['#play .topbar','#streakRow','#playCapy','#qcard','#pad'].map(q=>{const r=$(q).getBoundingClientRect();return{x:r.left-pr.left-6,y:r.top-pr.top-6,w:r.width+12,h:r.height+12}});
+}
+const boxHit=(a,b)=>a.x<b.x+b.w&&a.x+a.w>b.x&&a.y<b.y+b.h&&a.y+a.h>b.y;
+function findSpot(size,avoid,placed,allowOverlap){
+  const play=$('#play'),W=play.clientWidth,H=play.clientHeight,w=size,h=size*0.9;
+  if(W<w||H<h)return null;
+  for(let k=0;k<300;k++){
+    const c={x:Math.random()*(W-w),y:Math.random()*(H-h),w,h};
+    if(avoid.some(a=>boxHit(a,c)))continue;
+    if(!allowOverlap&&placed.some(p=>boxHit({x:p.x+p.w*.12,y:p.y+p.h*.12,w:p.w*.76,h:p.h*.76},c)))continue;
+    return c;
+  }
+  return null;
+}
+function placeAll(ids,size,avoid,allowOverlap){
+  const placed=[];
+  for(const id of ids){const c=findSpot(size,avoid,placed,allowOverlap);if(!c){if(!allowOverlap)return null;continue}placed.push({...c,id,rot:Math.round(Math.random()*24-12)})}
+  return placed;
+}
+function drawDeco(){
+  $('#capyDeco').innerHTML=decoPlaced.map(p=>`<div class="dcapy${p.id===decoNew?' new':''}" style="left:${p.x.toFixed(0)}px;top:${p.y.toFixed(0)}px;width:${p.w.toFixed(0)}px"><div style="transform:rotate(${p.rot}deg)">${capyHtml(p.id)}</div></div>`).join('');
+}
+function layoutDeco(){ // alles opnieuw, willekeurig verspreid; kleiner als het er veel worden
+  if(!$('#play').classList.contains('active'))return;
+  const ids=shuffle(earnedIds()),avoid=decoAvoid();
+  let size=Math.min(92,Math.max(48,$('#play').clientWidth/6)),placed=null;
+  while(size>=32&&!(placed=placeAll(ids,size,avoid,false)))size*=0.88;
+  if(!placed){size=32;placed=placeAll(ids,size,avoid,true)}
+  decoPlaced=placed;decoSize=size;drawDeco();
+}
+function addDeco(id){ // nieuwe capibara erbij zetten zonder de rest te verschuiven
+  decoNew=id;
+  const base=id%1000,i=decoPlaced.findIndex(p=>p.id%1000===base);
+  if(i>-1){decoPlaced[i].id=id;drawDeco();return} // glimmende versie neemt de plek van de gewone over
+  const c=decoSize?findSpot(decoSize,decoAvoid(),decoPlaced,false):null;
+  if(c){decoPlaced.push({...c,id,rot:Math.round(Math.random()*24-12)});drawDeco()}else layoutDeco();
+}
+let decoT=null;window.addEventListener('resize',()=>{clearTimeout(decoT);decoT=setTimeout(layoutDeco,250)});
 async function startPlay(){
   audio();
   if(store.online){settings=await store.loadSettings();store.loadFacts().then(f=>facts=f).catch(()=>{});refreshLastTest()}
@@ -933,9 +970,11 @@ async function startPlay(){
   startBest=settings.bestStreak||0;recordBroken=false;
   retry=[];stage={};qCount=0;lastKey=null;streak=0;stars=0;lastAct=Date.now();
   updCollectPill();$('#playBar').style.width=rewardPct()+'%';$('#streakRow').className='streakrow';updStreak();
-  show('play');startMusic();next();
+  show('play');decoNew=null;pendingDeco=null;requestAnimationFrame(layoutDeco);startMusic();next();
 }
+let pendingDeco=null;
 function next(){
+  if(pendingDeco!==null){const d=pendingDeco;pendingDeco=null;setTimeout(()=>addDeco(d),150)}
   busy=false;cur=pick();lastKey=cur;const [n,t]=cur.split('x');
   $('#q').textContent=n+' × '+t;$('#qcard').className='qcard';$('#fb').textContent='';$('#playCapy').className='capy playcapy';
   input='';firstKey=null;upd();qStart=Date.now();
@@ -995,8 +1034,9 @@ function giveSticker(fromTest){
   const i=pickSticker(),info=stickerInfo(i),th=activeTheme();
   const finale=th!=='normaal'&&THEME_SVG.stickers[th][THEME_SVG.stickers[th].length-1].id===i;
   settings.stickers=[...settings.stickers,i];store.saveSettings(settings);store.flushSettings();
+  if(!fromTest)pendingDeco=i;
   sfxFanfare();confetti(['🎉','⭐','🎈','💖','🍊'],30);
-  modal(`${capyHtml(i)}<h2>${finale?THEMES[th].finaleTxt:info.shiny?'Glimmende capibara!':'Nieuwe capibara!'}</h2><p>Je hebt de <b>${info.name}</b> verdiend omdat je zo goed ${fromTest?'je best doet':'oefent'}.</p>${fromTest?'<button class="big-btn" style="width:100%" onclick="goHome()">Klaar</button>':'<button class="big-btn" style="width:100%" onclick="closeModal();next()">Verder oefenen</button><button class="sec-btn" style="width:100%;margin-top:10px" onclick="closeModal();stopPlay()">Stoppen</button>'}`);
+  modal(`${capyHtml(i)}<h2>${finale?THEMES[th].finaleTxt:info.shiny?'Glimmende capibara!':'Nieuwe capibara!'}</h2><p>Je hebt de <b>${info.name}</b> verdiend omdat je zo goed ${fromTest?'je best doet':'oefent'}. Hij komt bij je sommen te staan!</p>${fromTest?'<button class="big-btn" style="width:100%" onclick="goHome()">Klaar</button>':'<button class="big-btn" style="width:100%" onclick="closeModal();next()">Verder oefenen</button><button class="sec-btn" style="width:100%;margin-top:10px" onclick="closeModal();stopPlay()">Stoppen</button>'}`);
 }
 function stopPlay(){
   stopMusic();store.flushSettings();
