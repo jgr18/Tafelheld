@@ -36,6 +36,27 @@ button{font-family:inherit;color:inherit;border:0;cursor:pointer}
 .shinyHead{grid-column:1/-1;color:#fff;font-weight:800;font-size:20px;margin-top:8px;text-align:center}
 .hc{display:flex;align-items:center;gap:12px}
 .hc b{font-size:20px;line-height:1.1;display:block}
+/* ---- oefen- en toetsscherm: 0,8 keer zo groot, zodat er meer ruimte is voor capibara's ---- */
+#play .wrap,#test .wrap{max-width:384px;gap:11px}
+#play .topbar,#test .topbar{gap:6px}
+#play .pill,#test .pill{font-size:16px;padding:5px 11px}
+#play .topbar .grow{font-size:16px;padding:5px 10px;gap:6px}
+#play .topbar .grow .bar{height:11px}
+#play .streakrow{font-size:15px;padding:3px 11px}
+#play .playcapy{width:96px;margin:12px auto -24px}
+#play .qcard,#test .qcard{border-radius:24px;padding:24px 13px 11px;min-height:152px;box-shadow:0 8px 0 rgba(80,50,160,.18)}
+#play .q,#test .q{font-size:clamp(43px,12vw,69px)}
+#play .ans,#test .ans{font-size:clamp(34px,9.6vw,51px);border-bottom-width:3px}
+#play .fb,#test .fb{font-size:19px;min-height:29px}
+#play .pad,#test .pad{gap:8px}
+#play .pad button,#test .pad button{font-size:27px;height:clamp(45px,6.8vh,59px);border-radius:16px;box-shadow:0 4px 0 #d6ccff}
+#play .pad .ok,#test .pad .ok{box-shadow:0 4px 0 #168a4b}
+#play .pad .del,#test .pad .del{box-shadow:0 4px 0 #f3b5c6}
+#test .knowbtn{font-size:29px;border-radius:20px;height:calc(4*clamp(45px,6.8vh,59px) + 24px)}
+#test .judge{gap:10px}
+#test .judge button{font-size:20px;padding:14px;border-radius:16px}
+#test .peek{font-size:18px}
+#test .timer{height:10px}
 /* ---- thema-kleuren ---- */
 body.th-sint{--t-bg:radial-gradient(120% 80% at 50% 0%,#b3202a 0%,#8e1b1b 45%,#5e0d12 100%);--t-card:#f8edd3;--t-border:#d4a537;--t-shadow:#5e0d12;--t-ink:#2b0a0d;--t-soft:#6b3a1e;--t-prim:linear-gradient(180deg,#f6cd5c,#e2a92c);--t-primInk:#4a0c10;--t-primShadow:#9c6d10;--t-key:#c79a3a;--t-title:#f3c350;--t-titleShadow:#4a0c10;--t-sub:#f8edd3}
 body.th-kerst{--t-bg:radial-gradient(120% 80% at 50% 0%,#2a5594 0%,#14305e 45%,#081530 100%);--t-card:#f4f9ff;--t-border:#2f8f5b;--t-shadow:#081530;--t-ink:#13294b;--t-soft:#3a5a7a;--t-prim:linear-gradient(180deg,#e23b4d,#b81f31);--t-primInk:#ffffff;--t-primShadow:#6e0f1b;--t-key:#9fb6d2;--t-title:#ffffff;--t-titleShadow:#d42a3c;--t-sub:#e9f3ff}
@@ -46,6 +67,9 @@ body.themed .pill,body.themed .topbar .grow,body.themed .streakrow{background:va
 body.themed .panel small,body.themed .stk span,body.themed .choice span{color:var(--t-soft)}
 body.themed .big-btn,body.themed .knowbtn{background:var(--t-prim);color:var(--t-primInk);box-shadow:0 6px 0 var(--t-primShadow)}
 body.themed .pad button{background:#fff;color:var(--t-ink);box-shadow:0 5px 0 var(--t-key)}
+body.themed #play .pad button,body.themed #test .pad button{box-shadow:0 4px 0 var(--t-key)}
+body.themed #play .pad .ok,body.themed #test .pad .ok{box-shadow:0 4px 0 var(--t-primShadow)}
+body.themed #play .pad .del,body.themed #test .pad .del{box-shadow:0 4px 0 #d6a0aa}
 body.themed .pad .ok{background:var(--t-prim);color:var(--t-primInk);box-shadow:0 5px 0 var(--t-primShadow)}
 body.themed .pad .del{background:#f8dde2;color:#7a0f17;box-shadow:0 5px 0 #d6a0aa}
 body.themed .hero{color:var(--t-sub)}
