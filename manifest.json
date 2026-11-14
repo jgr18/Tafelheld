@@ -1,7 +1,7 @@
 {
   "id": "./",
-  "name": "Tafelheld",
-  "short_name": "Tafelheld",
+  "name": "Tafelheld TEST",
+  "short_name": "Tafelheld TEST",
   "description": "Tafels oefenen met een capibara",
   "start_url": "./",
   "scope": "./",

@@ -57,6 +57,28 @@ button{font-family:inherit;color:inherit;border:0;cursor:pointer}
 #test .judge button{font-size:20px;padding:14px;border-radius:16px}
 #test .peek{font-size:18px}
 #test .timer{height:10px}
+/* ---- snake ---- */
+#snakeScr{background:#0f1a14;color:#e8f3ea;font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;gap:12px;padding:14px 12px 18px}
+.snk-head{width:100%;max-width:440px;display:flex;align-items:center;gap:8px}
+.snk-head h2{font-size:22px;margin:0;flex:1}
+.snk-scores{display:flex;gap:14px;font-variant-numeric:tabular-nums}
+.snk-scores div{text-align:right}
+.snk-scores small{display:block;font-size:11px;color:#8fae97;text-transform:uppercase;letter-spacing:1px}
+.snk-scores b{font-size:20px}
+.snk-btn{background:#1d3024;border:1px solid #2c4636;color:#e8f3ea;border-radius:10px;width:40px;height:36px;font-size:17px}
+.snk-board{position:relative;width:min(92vw,440px,calc(100vh - 250px));aspect-ratio:1;border-radius:14px;overflow:hidden;background:#16241c;box-shadow:0 0 0 2px #243a2c;touch-action:none}
+.snk-board canvas{display:block;width:100%;height:100%}
+.snk-over{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;background:rgba(10,18,13,.85);text-align:center;padding:20px}
+.snk-over.hidden{display:none}
+.snk-over h2{margin:0;font-size:28px}
+.snk-over p{margin:0;color:#b9d3bf;font-size:17px;line-height:1.5;white-space:pre-line}
+.snk-main{background:#7ee081;color:#0c1a10;border:0;border-radius:999px;padding:12px 28px;font-size:18px;font-weight:700;font-family:inherit}
+.snk-sec{background:none;color:#b9d3bf;border:1px solid #2f4a39;border-radius:999px;padding:9px 22px;font-size:15px;font-family:inherit}
+.snk-pad{display:grid;grid-template-columns:repeat(3,64px);grid-template-rows:repeat(2,58px);gap:8px}
+.snk-pad button{background:#1d3024;border:1px solid #2c4636;color:#e8f3ea;border-radius:14px;font-size:24px;touch-action:none}
+.snk-pad button:active{background:#2b4a36}
+.snk-up{grid-column:2;grid-row:1}.snk-left{grid-column:1;grid-row:2}.snk-down{grid-column:2;grid-row:2}.snk-right{grid-column:3;grid-row:2}
+.snk-pause{grid-column:3;grid-row:1;font-size:18px!important}
 /* ---- thema-kleuren ---- */
 body.th-sint{--t-bg:radial-gradient(120% 80% at 50% 0%,#b3202a 0%,#8e1b1b 45%,#5e0d12 100%);--t-card:#f8edd3;--t-border:#d4a537;--t-shadow:#5e0d12;--t-ink:#2b0a0d;--t-soft:#6b3a1e;--t-prim:linear-gradient(180deg,#f6cd5c,#e2a92c);--t-primInk:#4a0c10;--t-primShadow:#9c6d10;--t-key:#c79a3a;--t-title:#f3c350;--t-titleShadow:#4a0c10;--t-sub:#f8edd3}
 body.th-kerst{--t-bg:radial-gradient(120% 80% at 50% 0%,#2a5594 0%,#14305e 45%,#081530 100%);--t-card:#f4f9ff;--t-border:#2f8f5b;--t-shadow:#081530;--t-ink:#13294b;--t-soft:#3a5a7a;--t-prim:linear-gradient(180deg,#e23b4d,#b81f31);--t-primInk:#ffffff;--t-primShadow:#6e0f1b;--t-key:#9fb6d2;--t-title:#ffffff;--t-titleShadow:#d42a3c;--t-sub:#e9f3ff}
@@ -310,6 +332,26 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
   </div>
 </section>
 
+<!-- SNAKE -->
+<section class="screen" id="snakeScr">
+  <div class="snk-head">
+    <h2>🐍 Snake</h2>
+    <button class="snk-btn" id="snkMusic" onclick="snkToggleMusic()" aria-label="Muziek aan/uit">🎵</button>
+    <div class="snk-scores"><div><small>Score</small><b id="snkScore">0</b></div><div><small>Record</small><b id="snkBest">0</b></div></div>
+  </div>
+  <div class="snk-board" id="snkBoard">
+    <canvas id="snkCanvas"></canvas>
+    <div class="snk-over hidden" id="snkOver"><h2 id="snkOvTitle"></h2><p id="snkOvText"></p><div id="snkBtns" style="display:flex;flex-direction:column;gap:10px;align-items:center"></div></div>
+  </div>
+  <div class="snk-pad">
+    <button class="snk-up" data-d="up" aria-label="Omhoog">▲</button>
+    <button class="snk-pause" id="snkPause" aria-label="Pauze">❚❚</button>
+    <button class="snk-left" data-d="left" aria-label="Links">◀</button>
+    <button class="snk-down" data-d="down" aria-label="Omlaag">▼</button>
+    <button class="snk-right" data-d="right" aria-label="Rechts">▶</button>
+  </div>
+</section>
+
 <!-- TOETSKEUZE -->
 <section class="screen" id="testMenu">
   <div class="wrap">
@@ -412,6 +454,15 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
         <div class="muted" style="margin-top:6px">Kalender: half november t/m 5 december Sinterklaas · 6 t/m 13 december normaal · 14 t/m 27 december Kerst · 28 december t/m 1 januari Oud en nieuw · de rest van het jaar normaal. Verdiende stickers blijven altijd in haar boek.</div>
       </div>
       <div class="box">
+        <h3>Snake als beloning</h3>
+        <div class="row">Eén potje Snake na
+          <select id="snakeSel" onchange="snakeCfg().min=+this.value;store.saveSettings(settings)">
+            <option value="1">1 minuut (om te testen)</option><option value="5">5 minuten</option><option value="10">10 minuten</option><option value="15">15 minuten</option><option value="20">20 minuten</option><option value="0">uit</option>
+          </select> aaneengesloten oefenen</div>
+        <div class="muted">Elke keer dat ze in één oefenronde die tijd vol maakt, start Snake meteen. Na het potje gaat ze verder met oefenen. Alleen tijd waarin ze antwoorden geeft telt mee.</div>
+        <div class="muted" id="snakeStats" style="margin-top:6px"></div>
+      </div>
+      <div class="box">
         <h3>Beloning en geluid</h3>
         <div class="row">Nieuwe capibara na
           <select id="rewardSel" onchange="settings.rewardMin=+this.value;store.saveSettings(settings)">
@@ -462,12 +513,13 @@ table.hard td{padding:8px 6px;border-bottom:1px solid #f3f1fa}
    ========================================================= */
 const CFG=window.TAFELHELD_CONFIG||{};
 const WANT_ONLINE=!!(CFG.supabaseUrl&&CFG.supabaseAnonKey);
-const DEFAULTS={tables:[2,3,4,5,10],rewardMin:5,music:true,sfx:true,rewardMs:0,stickers:[],bestStreak:0,bestStreakAt:null,testN:40,testSec:3,theme:'auto',collect:{},passed:[]};
+const DEFAULTS={tables:[2,3,4,5,10],rewardMin:5,music:true,sfx:true,rewardMs:0,stickers:[],bestStreak:0,bestStreakAt:null,testN:40,testSec:3,theme:'auto',collect:{},passed:[],snake:{}};
 const $=s=>document.querySelector(s);
 const rnd=n=>Math.floor(Math.random()*n);
 const nowIso=()=>new Date().toISOString();
-function lsGet(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
-function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+const LSP=CFG.storagePrefix?CFG.storagePrefix+'-':''; // testversie: eigen opslag, zodat haar app op hetzelfde apparaat niet geraakt wordt
+function lsGet(k,d){try{const v=localStorage.getItem(LSP+k);return v?JSON.parse(v):d}catch(e){return d}}
+function lsSet(k,v){try{localStorage.setItem(LSP+k,JSON.stringify(v))}catch(e){}}
 function uuid(){try{if(crypto.randomUUID)return crypto.randomUUID()}catch(e){}return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g,c=>{const r=Math.random()*16|0;return(c==='x'?r:(r&3|8)).toString(16)})}
 const DEVICE=/Android/i.test(navigator.userAgent)?'Android':/iPhone|iPad/i.test(navigator.userAgent)?'iPhone/iPad':'Laptop/pc';
 function show(id){document.querySelectorAll('.screen').forEach(e=>e.classList.toggle('active',e.id===id));window.scrollTo(0,0)}
@@ -724,7 +776,7 @@ const SupaStore={
   online:true,ob:lsGet('th-outbox',{sessions:{},answers:[]}),st:null,pendingS:null,flushing:false,retryT:null,
   async init(){
     this.ob.tests=this.ob.tests||{};this.ob.testAnswers=this.ob.testAnswers||[];
-    sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey);
+    sb=window.supabase.createClient(CFG.supabaseUrl,CFG.supabaseAnonKey,CFG.storagePrefix?{auth:{storageKey:CFG.storagePrefix+'-auth'}}:undefined);
     const {data}=await sb.auth.getSession();
     if(data&&data.session){uid=data.session.user.id;userEmail=data.session.user.email;return true}
     return false;
@@ -739,7 +791,7 @@ const SupaStore={
       if(error)throw error;
       if(!data)return cache||{...DEFAULTS};
       const s={tables:data.tables||[],rewardMin:data.reward_min,music:data.music,sfx:data.sfx,rewardMs:Number(data.reward_ms)||0,stickers:data.stickers||[],
-        bestStreak:data.best_streak||0,bestStreakAt:data.best_streak_at||null,testN:data.test_n??DEFAULTS.testN,testSec:data.test_sec??DEFAULTS.testSec,theme:data.theme||'auto',collect:data.collect||{},passed:data.passed||[]};
+        bestStreak:data.best_streak||0,bestStreakAt:data.best_streak_at||null,testN:data.test_n??DEFAULTS.testN,testSec:data.test_sec??DEFAULTS.testSec,theme:data.theme||'auto',collect:data.collect||{},passed:data.passed||[],snake:data.snake||{}};
       lsSet('th-settings',s);return s;
     }catch(e){console.warn(e);return cache||{...DEFAULTS}}
   },
@@ -747,7 +799,7 @@ const SupaStore={
   async flushSettings(){
     clearTimeout(this.st);this.st=null;const s=this.pendingS;if(!s)return;
     try{const {error}=await safeUpsert('settings',[{user_id:uid,tables:s.tables,reward_min:s.rewardMin,music:s.music,sfx:s.sfx,reward_ms:Math.round(s.rewardMs),stickers:s.stickers,
-        best_streak:s.bestStreak||0,best_streak_at:s.bestStreakAt||null,test_n:s.testN,test_sec:s.testSec,theme:s.theme||'auto',collect:s.collect||{},passed:s.passed||[],updated_at:nowIso()}]);
+        best_streak:s.bestStreak||0,best_streak_at:s.bestStreakAt||null,test_n:s.testN,test_sec:s.testSec,theme:s.theme||'auto',collect:s.collect||{},passed:s.passed||[],snake:s.snake||{},updated_at:nowIso()}]);
       if(error)throw error;if(this.pendingS===s)this.pendingS=null}catch(e){console.warn('instellingen niet verstuurd',e)}
   },
   saveOb(){lsSet('th-outbox',this.ob)},
@@ -905,7 +957,7 @@ function renderHome(){
     if(last!==undefined&&STICKERS[last])capy(hc,STICKERS[last][0],STICKERS[last][2]);else capy(hc,'🍊','head');
   }
 }
-function goHome(){stopMusic();closeModal();store.flushSettings();applyTheme();renderHome();show('home')}
+function goHome(){snkHalt();stopMusic();closeModal();store.flushSettings();applyTheme();renderHome();show('home')}
 
 /* ---------- oefenen ---------- */
 let firstKey=null,cur=null,input='',qStart=0,lastAct=0,sess=null,busy=false,streak=0,stars=0;
@@ -994,10 +1046,119 @@ async function startPlay(){
   startBest=settings.bestStreak||0;recordBroken=false;
   retry=[];stage={};qCount=0;lastKey=null;streak=0;stars=0;lastAct=Date.now();
   updCollectPill();$('#playBar').style.width=rewardPct()+'%';$('#streakRow').className='streakrow';updStreak();
-  show('play');decoNew=null;pendingDeco=null;requestAnimationFrame(layoutDeco);startMusic();next();
+  show('play');decoNew=null;pendingDeco=null;pendingSnake=false;sessSnakes=0;requestAnimationFrame(layoutDeco);startMusic();next();
 }
 let pendingDeco=null;
+
+/* =========================================================
+   SNAKE – beloning na aaneengesloten oefenen
+   ========================================================= */
+const SNK_N=20,SNK_BASE=145; // 145 ms per stap: tussen "rustig" (170) en "normaal" (120)
+const SNK_DIRS={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+let snk={state:'off'},snkTimer=null,snkMusicT=null,snkNextT=0,snkStep=0,pendingSnake=false,sessSnakes=0;
+function snakeCfg(){settings.snake=settings.snake||{};return settings.snake}
+function snakeMin(){const m=snakeCfg().min;return (m===undefined||m===null)?10:+m}
+function checkSnakeEarned(){ // elke volle X minuten actief oefenen in deze ronde = één potje
+  const m=snakeMin();if(!m||!sess)return;
+  if(sess.active_ms>=m*60000*(sessSnakes+1)){sessSnakes++;pendingSnake=true}
+}
+const SNK_MEL=[69,72,76,72,74,72,69,67,69,72,76,79,77,76,74,0,72,74,76,74,72,69,67,69,65,67,69,72,71,67,69,0];
+const SNK_BAS=[45,0,52,0,48,0,55,0,45,0,52,0,50,0,53,0,48,0,55,0,45,0,52,0,41,0,48,0,43,0,45,0];
+const SNK_STEP=60/150/2;
+function snkMusicLoop(){while(snkNextT<ac.currentTime+0.15){const i=snkStep%SNK_MEL.length;
+  if(SNK_MEL[i])tone(mf(SNK_MEL[i]),snkNextT,SNK_STEP*0.85,'square',0.035);
+  if(SNK_BAS[i])tone(mf(SNK_BAS[i]),snkNextT,SNK_STEP*1.7,'triangle',0.07);
+  snkNextT+=SNK_STEP;snkStep++}}
+function snkMusicStart(){if(!settings.music||snkMusicT||!audio())return;snkStep=0;snkNextT=ac.currentTime+0.05;snkMusicT=setInterval(snkMusicLoop,40);snkMusicLoop();snkMusicBtn()}
+function snkMusicStop(){clearInterval(snkMusicT);snkMusicT=null;snkMusicBtn()}
+function snkMusicBtn(){const b=$('#snkMusic');if(b)b.textContent=snkMusicT?'🎵':'🔇'}
+function snkToggleMusic(){audio();if(snkMusicT){snkMusicStop();settings.music=false}else{settings.music=true;snkMusicStart()}store.saveSettings(settings)}
+function snkSfxEat(){if(!settings.sfx||!audio())return;const t=ac.currentTime;tone(1046,t,0.06,'square',0.09);tone(1568,t+0.05,0.08,'square',0.09)}
+function snkSfxOver(){if(!settings.sfx||!audio())return;const t=ac.currentTime;[523,440,349,262].forEach((f,k)=>tone(f,t+k*0.14,0.13,'square',0.09));tone(196,t+0.56,0.45,'square',0.08)}
+
+function openSnake(){
+  stopMusic();show('snakeScr');
+  const c=snakeCfg();$('#snkBest').textContent=c.best||0;
+  snkResize();snakeStart();
+}
+function snakeStart(){
+  audio();const m=Math.floor(SNK_N/2);
+  snk={state:'play',snake:[[m,m],[m-1,m],[m-2,m]],dir:'right',queue:[],score:0,tickMs:SNK_BASE,food:null,size:snk.size,cell:snk.cell};
+  $('#snkScore').textContent=0;snkPlaceFood();$('#snkOver').classList.add('hidden');
+  snkDraw();snkRestart();snkMusicStart();
+}
+function snkPlaceFood(){const free=[];for(let x=0;x<SNK_N;x++)for(let y=0;y<SNK_N;y++)if(!snk.snake.some(s=>s[0]===x&&s[1]===y))free.push([x,y]);snk.food=free[rnd(free.length)]}
+function snkTurn(d){
+  if(snk.state==='paused')snkResume();
+  if(snk.state!=='play')return;
+  const last=snk.queue.length?snk.queue[snk.queue.length-1]:snk.dir,[lx,ly]=SNK_DIRS[last],[nx,ny]=SNK_DIRS[d];
+  if(lx+nx===0&&ly+ny===0)return;if(d===last)return;if(snk.queue.length<3)snk.queue.push(d);
+}
+function snkStepFn(){
+  if(snk.queue.length)snk.dir=snk.queue.shift();
+  const [dx,dy]=SNK_DIRS[snk.dir],h=snk.snake[0],nh=[(h[0]+dx+SNK_N)%SNK_N,(h[1]+dy+SNK_N)%SNK_N]; // doorlopende muren
+  const eating=nh[0]===snk.food[0]&&nh[1]===snk.food[1],body=eating?snk.snake:snk.snake.slice(0,-1);
+  if(body.some(s=>s[0]===nh[0]&&s[1]===nh[1]))return snkGameOver(false);
+  snk.snake.unshift(nh);
+  if(eating){
+    snk.score++;$('#snkScore').textContent=snk.score;snkBuzz(15);snkSfxEat();
+    if(snk.snake.length===SNK_N*SNK_N)return snkGameOver(true);
+    snkPlaceFood();snk.tickMs=Math.max(SNK_BASE*0.55,SNK_BASE-snk.score*2);snkRestart(); // langzaam sneller
+  }else snk.snake.pop();
+  snkDraw();
+}
+function snkRestart(){clearInterval(snkTimer);snkTimer=setInterval(snkStepFn,snk.tickMs)}
+function snkHalt(){clearInterval(snkTimer);snkTimer=null;snkMusicStop();if(snk.state==='play'||snk.state==='paused')snk.state='off'}
+function snkPause(){if(snk.state!=='play')return;snk.state='paused';clearInterval(snkTimer);snkMusicStop();
+  snkOverlay('Pauze','Tik op Verder of swipe om door te gaan.',[['Verder','snkResume()']])}
+function snkResume(){if(snk.state!=='paused')return;snk.state='play';$('#snkOver').classList.add('hidden');snkRestart();snkMusicStart()}
+function snkGameOver(won){
+  clearInterval(snkTimer);snk.state='over';snkBuzz([60,40,60]);snkMusicStop();snkSfxOver();
+  const c=snakeCfg(),prev=c.last,score=snk.score;let msg=`Je score: ${score}`;
+  if(score>(c.best||0)){c.best=score;msg+=' — nieuw record! 🎉';confetti(['🐍','⭐','🍎'],24)}
+  else msg+=` · record: ${c.best}`;
+  if(prev!==undefined&&prev!==null)msg+=`\nVorige keer: ${prev}`;
+  c.last=score;c.played=(c.played||0)+1;c.lastAt=nowIso();$('#snkBest').textContent=c.best||0;
+  store.saveSettings(settings);store.flushSettings();snkDraw();
+  snkOverlay(won?'Gewonnen!':'Game over',msg,[['Verder oefenen','snakeBackToPractice()'],['Stoppen','snakeStopPractice()']]);
+}
+function snkOverlay(t,p,btns){
+  $('#snkOvTitle').textContent=t;$('#snkOvText').textContent=p;
+  $('#snkBtns').innerHTML=btns.map(([l,f],i)=>`<button class="${i?'snk-sec':'snk-main'}" onclick="${f}">${l}</button>`).join('');
+  $('#snkOver').classList.remove('hidden');
+}
+function snakeBackToPractice(){snkHalt();show('play');lastAct=Date.now();startMusic();requestAnimationFrame(layoutDeco);next()}
+function snakeStopPractice(){snkHalt();show('play');stopPlay()}
+function snkBuzz(p){try{navigator.vibrate&&navigator.vibrate(p)}catch(e){}}
+function snkResize(){const cv=$('#snkCanvas'),r=cv.getBoundingClientRect(),dpr=window.devicePixelRatio||1;snk.size=Math.floor(r.width*dpr);cv.width=cv.height=snk.size;snk.cell=snk.size/SNK_N;snkDraw()}
+function snkRR(ctx,x,y,w,h,r){ctx.beginPath();ctx.moveTo(x+r,y);ctx.arcTo(x+w,y,x+w,y+h,r);ctx.arcTo(x+w,y+h,x,y+h,r);ctx.arcTo(x,y+h,x,y,r);ctx.arcTo(x,y,x+w,y,r);ctx.closePath();ctx.fill()}
+function snkDraw(){
+  const cv=$('#snkCanvas'),ctx=cv.getContext('2d'),size=snk.size,cell=snk.cell;if(!size)return;
+  ctx.fillStyle='#16241c';ctx.fillRect(0,0,size,size);ctx.fillStyle='#1a2b20';
+  for(let x=0;x<SNK_N;x++)for(let y=0;y<SNK_N;y++)if((x+y)%2)ctx.fillRect(x*cell,y*cell,cell,cell);
+  if(!snk.snake)return;
+  const fx=snk.food[0]*cell+cell/2,fy=snk.food[1]*cell+cell/2;
+  ctx.fillStyle='#ff6b5b';ctx.beginPath();ctx.arc(fx,fy+cell*0.04,cell*0.38,0,Math.PI*2);ctx.fill();
+  ctx.fillStyle='#6fcf5a';ctx.beginPath();ctx.ellipse(fx+cell*0.12,fy-cell*0.36,cell*0.13,cell*0.07,-0.6,0,Math.PI*2);ctx.fill();
+  const pad=cell*0.08;
+  snk.snake.forEach((s,i)=>{const t=i/Math.max(1,snk.snake.length-1);ctx.fillStyle=i===0?'#c8f7b0':`hsl(${118-t*20},${62-t*15}%,${66-t*22}%)`;snkRR(ctx,s[0]*cell+pad,s[1]*cell+pad,cell-2*pad,cell-2*pad,cell*0.28)});
+  const h=snk.snake[0],[dx,dy]=SNK_DIRS[snk.dir],cx=h[0]*cell+cell/2,cy=h[1]*cell+cell/2,px=-dy,py=dx;ctx.fillStyle='#0c1a10';
+  [-1,1].forEach(k=>{ctx.beginPath();ctx.arc(cx+dx*cell*0.15+px*k*cell*0.18,cy+dy*cell*0.15+py*k*cell*0.18,cell*0.07,0,Math.PI*2);ctx.fill()});
+}
+function snkSetup(){
+  const board=$('#snkBoard');let sx=null,sy=null;
+  board.addEventListener('touchstart',e=>{const t=e.touches[0];sx=t.clientX;sy=t.clientY},{passive:true});
+  board.addEventListener('touchmove',e=>{e.preventDefault();if(sx===null)return;const t=e.touches[0],dx=t.clientX-sx,dy=t.clientY-sy;
+    if(Math.max(Math.abs(dx),Math.abs(dy))<22)return;snkTurn(Math.abs(dx)>Math.abs(dy)?(dx>0?'right':'left'):(dy>0?'down':'up'));sx=t.clientX;sy=t.clientY},{passive:false});
+  board.addEventListener('touchend',()=>{sx=sy=null});
+  document.querySelectorAll('#snakeScr [data-d]').forEach(b=>b.addEventListener('pointerdown',e=>{e.preventDefault();snkTurn(b.dataset.d)}));
+  $('#snkPause').addEventListener('pointerdown',e=>{e.preventDefault();snk.state==='play'?snkPause():snkResume()});
+  window.addEventListener('resize',()=>{if($('#snakeScr').classList.contains('active'))snkResize()});
+  document.addEventListener('visibilitychange',()=>{if(document.hidden&&snk.state==='play')snkPause()});
+}
+
 function next(){
+  if(pendingSnake){pendingSnake=false;openSnake();return}
   if(pendingDeco!==null){const d=pendingDeco;pendingDeco=null;setTimeout(()=>addDeco(d),150)}
   busy=false;cur=pick();lastKey=cur;const [n,t]=cur.split('x');
   $('#q').textContent=n+' × '+t;$('#qcard').className='qcard';$('#fb').textContent='';$('#playCapy').className='capy playcapy';
@@ -1022,6 +1183,7 @@ function check(){
   lastAct=now;
   sess.active_ms+=act;sess.ended_at=nowIso();ok?sess.correct++:sess.wrong++;
   settings.rewardMs+=act;
+  checkSnakeEarned();
   // lokaal bijhouden voor de somkeuze
   const first=firstKey===null?null:Math.min(firstKey,30000),quick=ok&&first!==null&&first<=3000;
   const f=facts[cur]||(facts[cur]={tries:0,correct:0,ms:0,wrongs:[],last:0,timedAll:0,timedOk:0,fsum:0,quick:0});
@@ -1075,6 +1237,11 @@ function confetti(set,n){const th=activeTheme();const ts=th!=='normaal'?THEME_SV
   s.style.left=rnd(100)+'vw';s.style.animationDuration=(1.6+Math.random()*1.6)+'s';s.style.animationDelay=(Math.random()*.4)+'s';
   document.body.appendChild(s);setTimeout(()=>s.remove(),3800)}}
 document.addEventListener('keydown',e=>{
+  if($('#snakeScr').classList.contains('active')){
+    const K={ArrowUp:'up',ArrowDown:'down',ArrowLeft:'left',ArrowRight:'right',w:'up',s:'down',a:'left',d:'right'};
+    if(K[e.key]){e.preventDefault();snkTurn(K[e.key])}else if(e.key===' '){e.preventDefault();snk.state==='play'?snkPause():snkResume()}
+    return;
+  }
   if($('#ov').classList.contains('show'))return;
   if($('#test').classList.contains('active')&&T&&T.mode==='zelf'){
     if(T.known===null){if(e.key===' '||e.key==='Enter'){e.preventDefault();know();return}if(/^[0-9]$/.test(e.key))know();else return}
@@ -1215,6 +1382,7 @@ function renderSettings(){
    $('#passedInfo').innerHTML=nw.length&&old.length?`Ze oefent nu <b>ongeveer 2/3 nieuwe sommen</b> (tafel ${nw.join(', ')}) en <b>1/3 herhaling</b> (tafel ${old.join(', ')}). Dat geldt ook voor de toetsen.`
      :old.length&&!nw.length?'Alle gekozen tafels zijn al gehaald, dus ze herhaalt alleen. Kies hierboven een nieuwe tafel om de verdeling 2/3 nieuw en 1/3 herhaling te krijgen.'
      :'Gehaalde tafels die je hierboven ook aanzet, komen terug in ongeveer 1 op de 3 sommen. Zo blijft de nadruk op de nieuwe tafels.'}
+  $('#snakeSel').value=String(snakeMin());{const c=snakeCfg();$('#snakeStats').textContent=c.played?`Gespeeld: ${c.played}× · record ${c.best||0} · vorige keer ${c.last??0}`:'Nog niet gespeeld.'}
   $('#rewardSel').value=settings.rewardMin;if(![20,30,40].includes(settings.testN))settings.testN=40;$('#testNSel').value=settings.testN;$('#testSecSel').value=settings.testSec;$('#musicChk').checked=settings.music;$('#sfxChk').checked=settings.sfx;
   $('#themeSel').value=settings.theme||'auto';{const a=activeTheme();$('#themeNow').innerHTML='Nu actief: <b>'+(a==='normaal'?'Normaal':THEMES[a].label)+'</b>'+((settings.theme||'auto')==='auto'&&a!=='normaal'?' (automatisch, tot en met '+THEMES[a].until+')':'')+'.'}
   renderInstall();
@@ -1313,7 +1481,8 @@ function drawAnalysis(){
     [keys.length?`⚡ ${vlotKeys}/${keys.length}`:'–','sommen al vlot (denktijd ≤ 3 s)'],
     [lt?`${lt.vlot}/${lt.total}`:'–',lt?`vlot bij laatste toets (${dstr(lt.started_at,{day:'numeric',month:'short'})})`:'nog geen toets gedaan'],
     [settings.bestStreak?`🏆 ${settings.bestStreak}`:'–','langste reeks goed'+(settings.bestStreakAt?' ('+dstr(settings.bestStreakAt,{day:'numeric',month:'short'})+')':'')],
-    [last?dstr(last):'–','laatst geoefend']
+    [last?dstr(last):'–','laatst geoefend'],
+    [snakeCfg().played?`🐍 ${snakeCfg().best||0}`:'–',snakeCfg().played?`Snake-record (${snakeCfg().played}× gespeeld)`:'Snake nog niet gespeeld']
   ].map(k=>`<div class="kpi"><b>${k[0]}</b><span>${k[1]}</span></div>`).join('');
   const dev={};S.forEach(s=>dev[s.device||'?']=(dev[s.device||'?']||0)+1);
   $('#devices').textContent=S.length?'Geoefend op: '+Object.entries(dev).map(([k,v])=>`${k} (${v}×)`).join(', '):'';
@@ -1400,7 +1569,7 @@ async function doInstall(){
 /* ---------- installeerbaar maken (Android: "Toevoegen aan startscherm") ---------- */
 try{if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{})}catch(e){}
 
-buildPad();buildTestPad();boot();
+buildPad();buildTestPad();snkSetup();boot();
 </script>
 </body>
 </html>
