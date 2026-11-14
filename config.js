@@ -3,7 +3,6 @@
 // Laat storagePrefix staan: daardoor heeft de testversie een eigen inlog en eigen opslag op het apparaat,
 // zodat de echte app op hetzelfde apparaat niet wordt uitgelogd of in de war raakt.
 window.TAFELHELD_CONFIG = {
-  supabaseUrl: "",
-  supabaseAnonKey: "",
-  storagePrefix: "tafelheld-test"
+  supabaseUrl: "https://ikndpthsyidvmdmsyadf.supabase.co",
+  supabaseAnonKey: "sb_publishable_Q7b8lFQNr1FTYcYHLo0hlw_q1aPKPgA",
 };
